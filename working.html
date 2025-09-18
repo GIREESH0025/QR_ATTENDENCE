@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>QR Attendance — Full Prototype</title>
+
+  <style>
+    body{font-family:system-ui,Arial;margin:18px;background:#f6f8fb;color:#111}
+    .box{max-width:950px;margin:0 auto;background:#fff;padding:14px;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,0.06)}
+    h1{margin:0 0 8px 0}
+    .row{display:flex;gap:8px;align-items:center;margin:6px 0;flex-wrap:wrap}
+    input[type=text],textarea{flex:1;padding:8px;border-radius:6px;border:1px solid #ddd}
+    button{padding:8px 12px;border-radius:8px;border:0;background:#1f6feb;color:#fff;cursor:pointer}
+    button.ghost{background:#eee;color:#111}
+    canvas#qrCanvas{display:block;margin:12px 0;border:1px solid #ddd;border-radius:8px}
+    #video{width:100%;max-height:360px;border-radius:8px;border:1px solid #ddd;object-fit:cover}
+    small{color:#666}
+    #records{margin-top:12px;padding-left:18px}
+    a.download{display:inline-block;margin-left:8px}
+    textarea{width:100%;height:80px}
+  </style>
+
+  <!-- Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+</head>
+<body>
+  <div class="box">
+    <h1>QR Attendance For Rural Schools</h1>
+
+    <!-- QR GENERATION -->
+    <section>
+      <h3>Generate QR</h3>
+      <div class="row">
+        <input id="genRoll" type="text" placeholder="Roll (e.g. 101)" />
+        <input id="genName" type="text" placeholder="Name (optional)" />
+        <button id="genBtn">Generate</button>
+        <a id="downloadBtn" class="download" href="#" download style="display:none">Download PNG</a>
+      </div>
+      <small>Payload format: <code>roll|name</code></small>
+      <canvas id="qrCanvas" width="200" height="200"></canvas>
+    </section>
+
+    <hr/>
+
+    <!-- SCANNER -->
+    <section>
+      <h3>Scan QR (camera)</h3>
+      <video id="video" autoplay playsinline muted></video>
+      <div class="row" style="margin-top:8px">
+        <button id="startBtn">Start Camera</button>
+        <button id="stopBtn" class="ghost">Stop</button>
+        <button id="uploadBtn" class="ghost">Upload Image</button>
+        <input id="fileInput" type="file" accept="image/*" style="display:none" />
+      </div>
+      <div id="status" style="margin-top:8px"><small>Status: idle</small></div>
+    </section>
+
+    <hr/>
+
+    <!-- ATTENDANCE -->
+    <section>
+      <h3>Attendance (local)</h3>
+      <div class="row">
+        <button id="exportAll">Export Attendance CSV</button>
+        <button id="clearAll" class="ghost">Clear All</button>
+      </div>
+      <ul id="records"></ul>
+    </section>
+
+    <hr/>
+
+    <!-- STUDENTS -->
+    <section>
+      <h3>Student List (CSV)</h3>
+      <div class="row">
+        <input type="file" id="studentFile" accept=".csv"/>
+        <button id="importFileBtn">Import File</button>
+        <button id="exportStudents">Export Students</button>
+      </div>
+      <textarea id="studentTextarea" placeholder="Paste CSV: roll,name"></textarea>
+      <button id="importTextareaBtn">Import from Textarea</button>
+      <ul id="students"></ul>
+    </section>
+    
+    <a href="https://kishan61623.github.io/teacher.io/">
+      <button>👩‍🏫 For QR Regeneration</button>
+    </a>
+  </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', ()=>{
+
+  // Storage keys
+  const ATT_KEY = 'qr_att_records_v1';
+  const STU_KEY = 'qr_students_v1';
+
+  // helpers
+  function load(key){ try{ return JSON.parse(localStorage.getItem(key) || '[]'); } catch(e){ return []; } }
+  function save(key,val){ localStorage.setItem(key,JSON.stringify(val)); }
+
+  // attendance
+  function loadAttendance(){ return load(ATT_KEY); }
+  function saveAttendance(v){ save(ATT_KEY,v); renderRecords(); }
+  function renderRecords(){
+    const arr = loadAttendance();
+    recordsUl.innerHTML = '';
+    arr.forEach((r,i)=>{
+      const li = document.createElement('li');
+      const time = r.ts ? new Date(r.ts).toLocaleTimeString() : '';
+      li.textContent = `${r.date} ${time} — ${r.roll} — ${r.name}`;
+      recordsUl.appendChild(li);
+    });
+  }
+
+  // students
+  function loadStudents(){ return load(STU_KEY); }
+  function saveStudents(v){ save(STU_KEY,v); renderStudents(); }
+  function renderStudents(){
+    const arr = loadStudents();
+    studentsUl.innerHTML = '';
+    arr.forEach(s=>{
+      const li = document.createElement('li');
+      li.textContent = `${s.roll} — ${s.name}`;
+      studentsUl.appendChild(li);
+    });
+  }
+
+  // DOM refs
+  const genRoll = document.getElementById('genRoll');
+  const genName = document.getElementById('genName');
+  const genBtn = document.getElementById('genBtn');
+  const qrCanvas = document.getElementById('qrCanvas');
+  const downloadBtn = document.getElementById('downloadBtn');
+  const video = document.getElementById('video');
+  const startBtn = document.getElementById('startBtn');
+  const stopBtn = document.getElementById('stopBtn');
+  const uploadBtn = document.getElementById('uploadBtn');
+  const fileInput = document.getElementById('fileInput');
+  const status = document.getElementById('status');
+  const recordsUl = document.getElementById('records');
+  const clearAll = document.getElementById('clearAll');
+  const exportAll = document.getElementById('exportAll');
+  const studentsUl = document.getElementById('students');
+  const studentFile = document.getElementById('studentFile');
+  const importFileBtn = document.getElementById('importFileBtn');
+  const exportStudents = document.getElementById('exportStudents');
+  const studentTextarea = document.getElementById('studentTextarea');
+  const importTextareaBtn = document.getElementById('importTextareaBtn');
+
+  renderRecords();
+  renderStudents();
+
+  // ✅ QR generation with duplicate check
+  genBtn.addEventListener('click', ()=>{
+    const roll = genRoll.value.trim();
+    let name = genName.value.trim();
+    if(!roll){ alert('Enter roll'); return; }
+
+    const stuList = loadStudents();
+    const exists = stuList.find(s => s.roll === roll && s.name.toLowerCase() === name.toLowerCase());
+
+    if(exists){
+      status.innerHTML = `<small style="color:red">❌ QR already generated for: ${roll} — ${name}</small>`;
+      return;
+    }
+
+    if(!name){
+      const stu = stuList.find(s => s.roll === roll);
+      if(stu) name = stu.name;
+    }
+
+    // add new student if not exists
+    if(!stuList.find(s => s.roll === roll)){
+      stuList.push({roll, name: name || 'Unknown'});
+      saveStudents(stuList);
+    }
+
+    const payload = name ? `${roll}|${name}` : roll;
+    // draw QR on canvas
+    new QRious({ element: qrCanvas, value: payload, size: 300 });
+    const dataUrl = qrCanvas.toDataURL('image/png');
+    downloadBtn.href = dataUrl;
+    downloadBtn.download = `qr_${roll}.png`;
+    downloadBtn.style.display = 'inline-block';
+    status.innerHTML = `<small style="color:green">✔ QR generated: <code>${payload}</code></small>`;
+  });
+
+  // Camera scanner
+  let stream = null; let scanning = false;
+  const hiddenCanvas = document.createElement('canvas');
+
+  async function startCamera(){
+    try{
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }});
+      video.srcObject = stream;
+      await video.play();
+      scanning = true;
+      scanTick();
+      status.innerHTML = '<small>Status: scanning...</small>';
+    }catch(e){ alert('Camera error: ' + e); }
+  }
+  function stopCamera(){ scanning = false; if(stream){ stream.getTracks().forEach(t=>t.stop()); } video.srcObject = null; status.innerHTML = '<small>Status: stopped</small>'; }
+
+  function scanTick(){
+    if(!scanning) return;
+    if(video.readyState === video.HAVE_ENOUGH_DATA){
+      hiddenCanvas.width = video.videoWidth;
+      hiddenCanvas.height = video.videoHeight;
+      const ctx = hiddenCanvas.getContext('2d');
+      ctx.drawImage(video, 0, 0);
+      const img = ctx.getImageData(0,0,hiddenCanvas.width,hiddenCanvas.height);
+      const code = jsQR(img.data, img.width, img.height);
+      if(code){ handlePayload(code.data); scanning = false; setTimeout(()=>{ scanning = true; scanTick(); }, 1500); return; }
+    }
+    requestAnimationFrame(scanTick);
+  }
+
+  startBtn.onclick = startCamera;
+  stopBtn.onclick = stopCamera;
+  uploadBtn.onclick = ()=>fileInput.click();
+  fileInput.onchange = e=>{
+    const f = e.target.files[0]; if(!f) return;
+    const reader = new FileReader();
+    reader.onload = ev=>{
+      const img = new Image();
+      img.onload = ()=>{
+        hiddenCanvas.width = img.width; hiddenCanvas.height = img.height;
+        const ctx = hiddenCanvas.getContext('2d'); ctx.drawImage(img,0,0);
+        const data = ctx.getImageData(0,0,img.width,img.height);
+        const code = jsQR(data.data, data.width, data.height);
+        if(code) handlePayload(code.data); else alert('No QR found');
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(f);
+  };
+
+  // ✅ Payload handler with duplicate check
+  function handlePayload(payload){
+    let roll = payload, name = '';
+    if(payload.includes('|')){ [roll, name] = payload.split('|'); }
+    roll = roll.trim(); name = (name || '').trim();
+    if(!name){
+      const stu = loadStudents().find(s => s.roll === roll);
+      if(stu) name = stu.name;
+    }
+    const recs = loadAttendance();
+    const today = new Date().toISOString().slice(0,10);
+
+    if(recs.some(r => r.roll === roll && r.date === today)){
+      status.innerHTML = `<small style="color:red">❌ Already marked today: ${roll} — ${name || 'Unknown'}</small>`;
+      return;
+    }
+
+    recs.unshift({ roll, name: name || 'Unknown', ts: Date.now(), date: today });
+    saveAttendance(recs);
+    status.innerHTML = `<small style="color:green">✔ Marked: ${roll} — ${name || 'Unknown'}</small>`;
+  }
+
+  // Attendance export/clear
+  clearAll.onclick = ()=>{ if(confirm('Clear all?')){ localStorage.removeItem(ATT_KEY); renderRecords(); } };
+  exportAll.onclick = ()=>{
+    const recs = loadAttendance();
+    let csv = "roll,name,timestamp,date\n";
+    recs.forEach(r => { csv += `${r.roll},${r.name},${r.ts},${r.date}\n`; });
+    downloadCSV(csv,'attendance.csv');
+  };
+
+  // Students import/export
+  importFileBtn.onclick = ()=>{
+    const f = studentFile.files[0]; if(!f){ alert('Choose file'); return; }
+    const reader = new FileReader();
+    reader.onload = e=>{ importCSV(e.target.result); };
+    reader.readAsText(f);
+  };
+  importTextareaBtn.onclick = ()=>{ importCSV(studentTextarea.value); };
+  exportStudents.onclick = ()=>{
+    const stu = loadStudents();
+    let csv = "roll,name\n";
+    stu.forEach(s => { csv += `${s.roll},${s.name}\n`; });
+    downloadCSV(csv,'students.csv');
+  };
+
+  function importCSV(text){
+    const lines = (text || '').trim().split(/\r?\n/);
+    const stu = loadStudents();
+    lines.forEach(line=>{
+      const [rollRaw, nameRaw] = line.split(',');
+      if(rollRaw && nameRaw){
+        const roll = rollRaw.trim();
+        const name = nameRaw.trim();
+        if(!stu.find(s=>s.roll===roll)){
+          stu.push({ roll, name });
+        }
+      }
+    });
+    saveStudents(stu);
+  }
+
+  function downloadCSV(data,filename){
+    const blob = new Blob([data], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; a.click();
+    URL.revokeObjectURL(url);
+  }
+
+});
+</script>
+</body>
+</html>
