@@ -4,251 +4,90 @@
 <meta charset="UTF-8">
 <title>QR Attendance System</title>
 <style>
-  /* ---------- General Styles ---------- */
   body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0;
-    padding: 0;
-    background: #f4f6f8;
-    color: #333;
+    margin: 0; padding: 0;
+    background: #f4f6f8; color: #333;
   }
+  h1, h2, h3 { text-align: center; color: #222; }
+  h1 { margin-top: 20px; font-size: 2rem; }
+  h2 { margin-top: 10px; font-size: 1.5rem; }
+  h3 { margin-top: 20px; font-size: 1.2rem; }
 
-  h1, h2, h3 {
-    text-align: center;
-    color: #222;
-  }
-
-  h1 {
-    margin-top: 20px;
-    font-size: 2rem;
-  }
-
-  h2 {
-    margin-top: 10px;
-    font-size: 1.5rem;
-  }
-
-  h3 {
-    margin-top: 20px;
-    font-size: 1.2rem;
-  }
-
-  /* ---------- Navigation ---------- */
   nav {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin: 20px 0;
-    gap: 8px;
+    display: flex; justify-content: center; flex-wrap: wrap;
+    margin: 20px 0; gap: 8px;
   }
-
   nav button {
-    padding: 10px 18px;
-    border: none;
-    border-radius: 8px;
-    background: #007bff;
-    color: #fff;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background 0.3s, transform 0.2s;
+    padding: 10px 18px; border: none; border-radius: 8px;
+    background: #007bff; color: #fff; font-size: 14px;
+    cursor: pointer; transition: background 0.3s, transform 0.2s;
   }
+  nav button:hover { background: #0056b3; transform: translateY(-2px); }
 
-  nav button:hover {
-    background: #0056b3;
-    transform: translateY(-2px);
-  }
-
-  nav button:focus {
-    outline: none;
-  }
-
-  /* ---------- Tabs ---------- */
   .tab {
-    display: none;
-    max-width: 900px;
-    margin: 0 auto 40px;
-    padding: 20px;
-    background: #fff;
-    border-radius: 12px;
+    display: none; max-width: 900px; margin: 0 auto 40px;
+    padding: 20px; background: #fff; border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   }
+  .active { display: block; }
 
-  .active {
-    display: block;
-  }
-
-  /* ---------- Forms & Inputs ---------- */
-  label {
-    display: block;
-    margin: 10px 0 5px;
-    font-weight: 600;
-  }
-
+  label { display: block; margin: 10px 0 5px; font-weight: 600; }
   input[type="text"], input[type="file"] {
-    width: 100%;
-    max-width: 300px;
-    padding: 8px 10px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    margin-bottom: 10px;
+    width: 100%; max-width: 300px; padding: 8px 10px;
+    border-radius: 6px; border: 1px solid #ccc; margin-bottom: 10px;
   }
 
-  button {
-    cursor: pointer;
-  }
-
-  /* ---------- QR Canvas & Download ---------- */
   #qrCanvas {
-    display: block;
-    margin: 15px auto;
-    border: 2px solid #007bff;
-    border-radius: 8px;
+    display: block; margin: 15px auto; border: 2px solid #007bff; border-radius: 8px;
   }
-
   #downloadBtn {
-    display: inline-block;
-    margin: 10px auto;
-    padding: 8px 12px;
-    background: #28a745;
-    color: #fff;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: 600;
-    transition: background 0.3s;
+    display: inline-block; margin: 10px auto; padding: 8px 12px;
+    background: #28a745; color: #fff; border-radius: 6px;
+    text-decoration: none; font-weight: 600; transition: background 0.3s;
   }
+  #downloadBtn:hover { background: #218838; }
+  #genStatus { text-align: center; margin-top: 10px; font-size: 14px; }
 
-  #downloadBtn:hover {
-    background: #218838;
-  }
-
-  #genStatus {
-    text-align: center;
-    margin-top: 10px;
-    font-size: 14px;
-  }
-
-  /* ---------- Video & Scan ---------- */
-  #preview {
-    display: block;
-    margin: 0 auto 10px;
-    border-radius: 8px;
-  }
-
-  #scanControls {
-    text-align: center;
-    margin-bottom: 10px;
-  }
-
+  #preview { display: block; margin: 0 auto 10px; border-radius: 8px; }
+  #scanControls { text-align: center; margin-bottom: 10px; }
   #scanControls button {
-    padding: 8px 14px;
-    margin: 5px;
-    border-radius: 6px;
-    border: none;
-    background: #007bff;
-    color: #fff;
-    font-weight: 600;
-    transition: background 0.3s;
+    padding: 8px 14px; margin: 5px; border-radius: 6px;
+    border: none; background: #007bff; color: #fff; font-weight: 600;
   }
-
-  #scanControls button:hover {
-    background: #007bff;
-  }
-
-  #scanResult {
-    text-align: center;
-    font-weight: 600;
-    margin: 10px 0;
-    font-size: 15px;
-  }
-
+  #scanResult { text-align: center; font-weight: 600; margin: 10px 0; font-size: 15px; }
   #scanHistory {
-    max-width: 500px;
-    margin: 0 auto;
-    list-style: none;
-    padding: 0;
+    max-width: 500px; margin: 0 auto; list-style: none; padding: 0;
   }
-
   #scanHistory li {
-    background: #f1f3f5;
-    margin: 4px 0;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 14px;
+    background: #f1f3f5; margin: 4px 0; padding: 6px 12px; border-radius: 6px; font-size: 14px;
   }
 
-  /* ---------- Student & Attendance Lists ---------- */
-  #stuList, #attList {
-    list-style: none;
-    padding: 0;
-    max-width: 500px;
-    margin: 10px auto;
-  }
-
-  #stuList li, #attList li {
-    background: #e9ecef;
-    margin: 4px 0;
-    padding: 8px 12px;
-    border-radius: 6px;
-  }
-
-  /* ---------- Tables ---------- */
   table {
-    width: 100%;
-    max-width: 900px;
-    margin: 10px auto 20px;
-    border-collapse: collapse;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    border-radius: 8px;
-    overflow: hidden;
+    width: 100%; max-width: 900px; margin: 10px auto 20px;
+    border-collapse: collapse; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border-radius: 8px; overflow: hidden;
   }
+  th, td { padding: 10px 12px; text-align: center; }
+  th { background: #007bff; color: #fff; }
+  tbody tr:nth-child(even) { background: #f8f9fa; }
+  tbody tr:hover { background: #d1ecf1; cursor: pointer; }
 
-  th, td {
-    padding: 10px 12px;
-    text-align: center;
-  }
-
-  th {
-    background: #007bff;
-    color: #fff;
-  }
-
-  tbody tr:nth-child(even) {
-    background: #f8f9fa;
-  }
-
-  tbody tr:hover {
-    background: #d1ecf1;
-    cursor: pointer;
-  }
-
-  /* ---------- Export / Action Buttons ---------- */
   button[id^="export"], #genReport {
-    display: inline-block;
-    margin: 5px;
-    padding: 8px 14px;
-    border: none;
-    border-radius: 6px;
-    background: #17a2b8;
-    color: #fff;
-    font-weight: 600;
-    transition: background 0.3s;
+    display: inline-block; margin: 5px; padding: 8px 14px;
+    border: none; border-radius: 6px; background: #17a2b8;
+    color: #fff; font-weight: 600; transition: background 0.3s;
   }
+  button[id^="export"]:hover, #genReport:hover { background: #138496; }
 
-  button[id^="export"]:hover, #genReport:hover {
-    background: #138496;
-  }
-
-  /* ---------- Responsive ---------- */
   @media(max-width: 600px){
     nav { flex-direction: column; align-items: center; }
     input[type="text"], input[type="file"], button[id^="export"], #genReport { width: 90%; max-width: 300px; }
     table, canvas { width: 90%; }
   }
 </style>
-
 </head>
 <body>
-
 <h1>QR Attendance System</h1>
 
 <nav>
@@ -393,23 +232,25 @@ document.getElementById('startScan').addEventListener('click', async()=>{
   const preview=document.getElementById('preview');
 
   try{
-    // stop old stream if any
     if(activeStream){ activeStream.getTracks().forEach(track=>track.stop()); }
 
-    codeReader.decodeFromVideoDevice(undefined,preview,(result,err)=>{
+    activeStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+    preview.srcObject = activeStream;
+    preview.setAttribute("playsinline", true);
+    await preview.play();
+
+    codeReader.decodeFromVideoDevice(null, preview, (result, err)=>{
       if(result){
         const payload=result.getText();
         if(payload!==lastScanned){
           lastScanned=payload;
           document.getElementById('scanResult').textContent="Scanned: "+payload;
           handleScan(payload);
-          setTimeout(()=>{ lastScanned=""; },2000); // reset after 2s
+          setTimeout(()=>{ lastScanned=""; },2000);
         }
       }
-    }).then(stream=>{
-      activeStream=stream;
     });
-  }catch(e){ console.error(e); }
+  }catch(e){ console.error("Camera error:", e); alert("Could not access camera. Check permissions."); }
 });
 
 document.getElementById('stopScan').addEventListener('click', ()=>{
@@ -420,8 +261,7 @@ document.getElementById('stopScan').addEventListener('click', ()=>{
   }
 });
 
-// ---------- Handle Scan ----------
-// ---------- Handle Scan ----------
+// ---------- Handle Scan + Voice ----------
 function handleScan(payload){
   let roll=payload,name='',cls='';
   if(payload.includes('|')){ [roll,name,cls]=payload.split('|'); }
@@ -441,10 +281,19 @@ function handleScan(payload){
   recs.unshift({ roll, name, class: cls, ts: Date.now(), date: today });
   saveAttendance(recs);
 
-  scanResultDiv.textContent = `✅Attendance marked for ${roll} — ${name}`;
+  scanResultDiv.textContent = `✅ Attendance marked for ${roll} — ${name}`;
+  speak(`Attendance marked for ${name}, roll number ${roll}`);
   showStudentHistory(roll);
 }
 
+// ---------- Voice Function ----------
+function speak(text){
+  if('speechSynthesis' in window){
+    const msg = new SpeechSynthesisUtterance(text);
+    msg.lang = "en-IN"; // Indian English accent
+    window.speechSynthesis.speak(msg);
+  }
+}
 
 // ---------- Show Student History ----------
 function showStudentHistory(roll){
@@ -481,44 +330,7 @@ function renderAttendance(){
   });
 }
 
-// ---------- Export Students CSV ----------
-document.getElementById('exportStudents').addEventListener('click', ()=>{
-  const stu=loadStudents();
-  let csv="roll,name,class\n";
-  stu.forEach(s=>{ csv+=`${s.roll},${s.name},${s.class}\n`; });
-  downloadCSV(csv,"students.csv");
-});
-
-// ---------- Export Raw Attendance CSV ----------
-document.getElementById('exportRawAttendance').addEventListener('click', ()=>{
-  const recs=loadAttendance();
-  let csv="roll,name,class,timestamp,date\n";
-  recs.forEach(r=>{
-    csv+=`${r.roll},${r.name},${r.class},${r.ts},${r.date}\n`;
-  });
-  downloadCSV(csv,"attendance_raw.csv");
-});
-
-// ---------- Export Student Report CSV ----------
-document.getElementById('exportStudentReport').addEventListener('click', ()=>{
-  const { studentRows } = calculateMonthlyReport();
-  let csv="roll,name,class,month,attended,totalDays,percentage\n";
-  studentRows.forEach(r=>{
-    csv+=`${r.roll},${r.name},${r.class},${r.month},${r.attended},${r.totalDays},${r.perc}%\n`;
-  });
-  downloadCSV(csv,"student_report.csv");
-});
-
-// ---------- Export Class Report CSV ----------
-document.getElementById('exportClassReport').addEventListener('click', ()=>{
-  const { classRows } = calculateMonthlyReport();
-  let csv="class,month,totalStudents,totalDays,totalAttendance,percentage\n";
-  classRows.forEach(c=>{
-    csv+=`${c.class},${c.month},${c.totalStudents},${c.totalDays},${c.totalAttendance},${c.perc}%\n`;
-  });
-  downloadCSV(csv,"class_report.csv");
-});
-
+// ---------- CSV Export/Import ----------
 function downloadCSV(data,filename){
   const blob=new Blob([data],{type:'text/csv'});
   const url=URL.createObjectURL(blob);
@@ -527,7 +339,34 @@ function downloadCSV(data,filename){
   URL.revokeObjectURL(url);
 }
 
-// ---------- Import Students CSV ----------
+document.getElementById('exportStudents').addEventListener('click', ()=>{
+  const stu=loadStudents();
+  let csv="roll,name,class\n";
+  stu.forEach(s=>{ csv+=`${s.roll},${s.name},${s.class}\n`; });
+  downloadCSV(csv,"students.csv");
+});
+
+document.getElementById('exportRawAttendance').addEventListener('click', ()=>{
+  const recs=loadAttendance();
+  let csv="roll,name,class,timestamp,date\n";
+  recs.forEach(r=>{ csv+=`${r.roll},${r.name},${r.class},${r.ts},${r.date}\n`; });
+  downloadCSV(csv,"attendance_raw.csv");
+});
+
+document.getElementById('exportStudentReport').addEventListener('click', ()=>{
+  const { studentRows } = calculateMonthlyReport();
+  let csv="roll,name,class,month,attended,totalDays,percentage\n";
+  studentRows.forEach(r=>{ csv+=`${r.roll},${r.name},${r.class},${r.month},${r.attended},${r.totalDays},${r.perc}%\n`; });
+  downloadCSV(csv,"student_report.csv");
+});
+
+document.getElementById('exportClassReport').addEventListener('click', ()=>{
+  const { classRows } = calculateMonthlyReport();
+  let csv="class,month,totalStudents,totalDays,totalAttendance,percentage\n";
+  classRows.forEach(c=>{ csv+=`${c.class},${c.month},${c.totalStudents},${c.totalDays},${c.totalAttendance},${c.perc}%\n`; });
+  downloadCSV(csv,"class_report.csv");
+});
+
 document.getElementById('importCSV').addEventListener('change', e=>{
   const file=e.target.files[0]; if(!file) return;
   const reader=new FileReader();
@@ -546,8 +385,7 @@ function importCSV(text){
       stu.push({ roll, name, class: cls });
     }
   });
-  saveStudents(stu);
-  renderStudents();
+  saveStudents(stu); renderStudents();
 }
 
 // ---------- Reports ----------
@@ -572,50 +410,45 @@ function calculateMonthlyReport(){
     const totalDays=new Date(year,mon,0).getDate();
     const attended=r.days.size;
     const perc=((attended/totalDays)*100).toFixed(1);
-    studentRows.push({ roll:r.roll,name:r.name,class:r.class,month:r.month,attended,totalDays,perc });
-
-    const classKey=`${r.class}|${r.month}`;
-    if(!classReport[classKey]){
-      classReport[classKey]={ class:r.class, month:r.month, totalDays, totalStudents:0, totalAttendance:0 };
-    }
-    classReport[classKey].totalStudents++;
-    classReport[classKey].totalAttendance+=attended;
+    studentRows.push({ roll:r.roll, name:r.name, class:r.class, month:r.month, attended, totalDays, perc });
   }
+
+  studentRows.forEach(r=>{
+    const key=`${r.class}|${r.month}`;
+    if(!classReport[key]){
+      classReport[key]={ class:r.class, month:r.month, totalStudents:0, totalDays:r.totalDays, totalAttendance:0 };
+    }
+    classReport[key].totalStudents+=1;
+    classReport[key].totalAttendance+=r.attended;
+  });
 
   const classRows=[];
   for(const k in classReport){
     const c=classReport[k];
-    const possible=c.totalStudents*c.totalDays;
-    const perc=((c.totalAttendance/possible)*100).toFixed(1);
-    classRows.push({ class:c.class, month:c.month, totalStudents:c.totalStudents,
-                     totalDays:c.totalDays, totalAttendance:c.totalAttendance, perc });
+    const maxPossible=c.totalStudents*c.totalDays;
+    const perc=((c.totalAttendance/maxPossible)*100).toFixed(1);
+    classRows.push({ class:c.class, month:c.month, totalStudents:c.totalStudents, totalDays:c.totalDays, totalAttendance:c.totalAttendance, perc });
   }
   return { studentRows, classRows };
 }
 
 document.getElementById('genReport').addEventListener('click', ()=>{
-  const { studentRows, classRows } = calculateMonthlyReport();
-
+  const { studentRows, classRows }=calculateMonthlyReport();
   const tbody=document.querySelector('#reportTable tbody');
   tbody.innerHTML='';
   studentRows.forEach(r=>{
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${r.roll}</td><td>${r.name}</td><td>${r.class}</td>
-                  <td>${r.month}</td><td>${r.attended}</td>
-                  <td>${r.totalDays}</td><td>${r.perc}%</td>`;
+    tr.innerHTML=`<td>${r.roll}</td><td>${r.name}</td><td>${r.class}</td><td>${r.month}</td><td>${r.attended}</td><td>${r.totalDays}</td><td>${r.perc}%</td>`;
     tbody.appendChild(tr);
   });
-
-  const cbody=document.querySelector('#classReportTable tbody');
-  cbody.innerHTML='';
+  const tbody2=document.querySelector('#classReportTable tbody');
+  tbody2.innerHTML='';
   classRows.forEach(c=>{
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${c.class}</td><td>${c.month}</td><td>${c.totalStudents}</td>
-                  <td>${c.totalDays}</td><td>${c.totalAttendance}</td><td>${c.perc}%</td>`;
-    cbody.appendChild(tr);
+    tr.innerHTML=`<td>${c.class}</td><td>${c.month}</td><td>${c.totalStudents}</td><td>${c.totalDays}</td><td>${c.totalAttendance}</td><td>${c.perc}%</td>`;
+    tbody2.appendChild(tr);
   });
 });
 </script>
 </body>
 </html>
-
