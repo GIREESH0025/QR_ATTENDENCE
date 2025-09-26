@@ -56,7 +56,9 @@
 <!-- Attendance -->
 <div id="attendance" class="tab">
   <h2>Attendance Records</h2>
-  <button id="exportAttendance">Export Attendance CSV</button>
+  <button id="exportRawAttendance">Export Raw Attendance CSV</button>
+  <button id="exportStudentReport">Export Student Report CSV</button>
+  <button id="exportClassReport">Export Class Report CSV</button>
   <ul id="attList"></ul>
 </div>
 
@@ -193,19 +195,44 @@ function renderAttendance(){
   });
 }
 
-// ---------- Export CSV ----------
+// ---------- Export Students CSV ----------
 document.getElementById('exportStudents').addEventListener('click', ()=>{
   const stu=loadStudents();
   let csv="roll,name,class\n";
   stu.forEach(s=>{ csv+=`${s.roll},${s.name},${s.class}\n`; });
   downloadCSV(csv,"students.csv");
 });
-document.getElementById('exportAttendance').addEventListener('click', ()=>{
+
+// ---------- Export Raw Attendance CSV ----------
+document.getElementById('exportRawAttendance').addEventListener('click', ()=>{
   const recs=loadAttendance();
   let csv="roll,name,class,timestamp,date\n";
-  recs.forEach(r=>{ csv+=`${r.roll},${r.name},${r.class},${r.ts},${r.date}\n`; });
-  downloadCSV(csv,"attendance.csv");
+  recs.forEach(r=>{
+    csv+=`${r.roll},${r.name},${r.class},${r.ts},${r.date}\n`;
+  });
+  downloadCSV(csv,"attendance_raw.csv");
 });
+
+// ---------- Export Student Report CSV ----------
+document.getElementById('exportStudentReport').addEventListener('click', ()=>{
+  const { studentRows } = calculateMonthlyReport();
+  let csv="roll,name,class,month,attended,totalDays,percentage\n";
+  studentRows.forEach(r=>{
+    csv+=`${r.roll},${r.name},${r.class},${r.month},${r.attended},${r.totalDays},${r.perc}%\n`;
+  });
+  downloadCSV(csv,"student_report.csv");
+});
+
+// ---------- Export Class Report CSV ----------
+document.getElementById('exportClassReport').addEventListener('click', ()=>{
+  const { classRows } = calculateMonthlyReport();
+  let csv="class,month,totalStudents,totalDays,totalAttendance,percentage\n";
+  classRows.forEach(c=>{
+    csv+=`${c.class},${c.month},${c.totalStudents},${c.totalDays},${c.totalAttendance},${c.perc}%\n`;
+  });
+  downloadCSV(csv,"class_report.csv");
+});
+
 function downloadCSV(data,filename){
   const blob=new Blob([data],{type:'text/csv'});
   const url=URL.createObjectURL(blob);
