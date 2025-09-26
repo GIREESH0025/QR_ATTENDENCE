@@ -33,8 +33,9 @@
     <section>
       <h3>Generate QR</h3>
       <div class="row">
-        <input id="genRoll" type="text" placeholder="Roll (e.g. 101)" />
-        <input id="genName" type="text" placeholder="Name (optional)" />
+        <input id="genclass" type="text" placeholder="Enter Class" />
+        <input id="genRoll" type="text" placeholder="Roll" />
+        <input id="genName" type="text" placeholder="Enter Name" />
         <button id="genBtn">Generate</button>
         <a id="downloadBtn" class="download" href="#" download style="display:none">Download PNG</a>
       </div>
@@ -130,6 +131,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   // DOM refs
   const genRoll = document.getElementById('genRoll');
   const genName = document.getElementById('genName');
+  const genclass = document.getElementById('genclass')
   const genBtn = document.getElementById('genBtn');
   const qrCanvas = document.getElementById('qrCanvas');
   const downloadBtn = document.getElementById('downloadBtn');
@@ -311,4 +313,5 @@ document.addEventListener('DOMContentLoaded', ()=>{
 </script>
 </body>
 </html>
+
 
