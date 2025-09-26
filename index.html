@@ -421,6 +421,7 @@ document.getElementById('stopScan').addEventListener('click', ()=>{
 });
 
 // ---------- Handle Scan ----------
+// ---------- Handle Scan ----------
 function handleScan(payload){
   let roll=payload,name='',cls='';
   if(payload.includes('|')){ [roll,name,cls]=payload.split('|'); }
@@ -428,17 +429,22 @@ function handleScan(payload){
 
   const recs=loadAttendance();
   const today=new Date().toISOString().slice(0,10);
+
+  const scanResultDiv = document.getElementById('scanResult');
+
   if(recs.find(r=>r.roll===roll && r.date===today)){
-    alert("Already marked today"); 
+    scanResultDiv.textContent = `⚠ Already marked today: ${roll} — ${name}`;
     showStudentHistory(roll);
     return;
   }
+
   recs.unshift({ roll, name, class: cls, ts: Date.now(), date: today });
   saveAttendance(recs);
-  alert("Attendance marked for "+roll);
 
+  scanResultDiv.textContent = `✔ Attendance marked for ${roll} — ${name}`;
   showStudentHistory(roll);
 }
+
 
 // ---------- Show Student History ----------
 function showStudentHistory(roll){
@@ -612,4 +618,5 @@ document.getElementById('genReport').addEventListener('click', ()=>{
 </script>
 </body>
 </html>
+
 
