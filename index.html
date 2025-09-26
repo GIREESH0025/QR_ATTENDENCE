@@ -144,14 +144,14 @@
     margin: 5px;
     border-radius: 6px;
     border: none;
-    background: #ffc107;
+    background: #007bff;
     color: #fff;
     font-weight: 600;
     transition: background 0.3s;
   }
 
   #scanControls button:hover {
-    background: #e0a800;
+    background: #007bff;
   }
 
   #scanResult {
@@ -433,7 +433,7 @@ function handleScan(payload){
   const scanResultDiv = document.getElementById('scanResult');
 
   if(recs.find(r=>r.roll===roll && r.date===today)){
-    scanResultDiv.textContent = `⚠ Already marked today: ${roll} — ${name}`;
+    scanResultDiv.textContent = `❌ Already marked today: ${roll} — ${name}`;
     showStudentHistory(roll);
     return;
   }
@@ -441,7 +441,7 @@ function handleScan(payload){
   recs.unshift({ roll, name, class: cls, ts: Date.now(), date: today });
   saveAttendance(recs);
 
-  scanResultDiv.textContent = `✔ Attendance marked for ${roll} — ${name}`;
+  scanResultDiv.textContent = `✅Attendance marked for ${roll} — ${name}`;
   showStudentHistory(roll);
 }
 
@@ -618,5 +618,4 @@ document.getElementById('genReport').addEventListener('click', ()=>{
 </script>
 </body>
 </html>
-
 
