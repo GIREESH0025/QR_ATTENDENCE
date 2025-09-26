@@ -2,201 +2,450 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>QR Attendance System</title>
 <style>
-  body { font-family: Arial, sans-serif; margin: 20px; background:#f4f6f8; color:#333; }
-  nav button { margin: 5px; padding: 10px 16px; font-size: 16px; border:none; border-radius:6px; cursor:pointer; }
-  .tab { display: none; margin-top: 20px; }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0; padding: 0;
+    background: #f4f6f8; color: #333;
+  }
+  h1, h2, h3 { text-align: center; color: #222; }
+  h1 { margin-top: 20px; font-size: 2rem; }
+  h2 { margin-top: 10px; font-size: 1.5rem; }
+  h3 { margin-top: 20px; font-size: 1.2rem; }
+
+  nav {
+    display: flex; justify-content: center; flex-wrap: wrap;
+    margin: 20px 0; gap: 8px;
+  }
+  nav button {
+    padding: 10px 18px; border: none; border-radius: 8px;
+    background: #007bff; color: #fff; font-size: 14px;
+    cursor: pointer; transition: background 0.3s, transform 0.2s;
+  }
+  nav button:hover { background: #0056b3; transform: translateY(-2px); }
+
+  .tab {
+    display: none; max-width: 900px; margin: 0 auto 40px;
+    padding: 20px; background: #fff; border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
   .active { display: block; }
-  table { border-collapse: collapse; width: 100%; margin-top: 10px; background:#fff; }
-  th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-  th { background: #eee; }
-  video { width: 100%; max-height: 300px; background: #000; margin-top: 10px; }
-  input, select { padding: 6px; margin: 5px; }
+
+  label { display: block; margin: 10px 0 5px; font-weight: 600; }
+  input[type="text"], input[type="file"] {
+    width: 100%; max-width: 300px; padding: 8px 10px;
+    border-radius: 6px; border: 1px solid #ccc; margin-bottom: 10px;
+  }
+
+  #qrCanvas {
+    display: block; margin: 15px auto; border: 2px solid #007bff; border-radius: 8px;
+  }
+  #downloadBtn {
+    display: inline-block; margin: 10px auto; padding: 8px 12px;
+    background: #28a745; color: #fff; border-radius: 6px;
+    text-decoration: none; font-weight: 600; transition: background 0.3s;
+  }
+  #downloadBtn:hover { background: #218838; }
+  #genStatus { text-align: center; margin-top: 10px; font-size: 14px; }
+
+  #preview { display: block; margin: 0 auto 10px; border-radius: 8px; }
+  #scanControls { text-align: center; margin-bottom: 10px; }
+  #scanControls button {
+    padding: 8px 14px; margin: 5px; border-radius: 6px;
+    border: none; background: #007bff; color: #fff; font-weight: 600;
+  }
+  #scanResult { text-align: center; font-weight: 600; margin: 10px 0; font-size: 15px; }
+  #scanHistory {
+    max-width: 500px; margin: 0 auto; list-style: none; padding: 0;
+  }
+  #scanHistory li {
+    background: #f1f3f5; margin: 4px 0; padding: 6px 12px; border-radius: 6px; font-size: 14px;
+  }
+
+  table {
+    width: 100%; max-width: 900px; margin: 10px auto 20px;
+    border-collapse: collapse; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border-radius: 8px; overflow: hidden;
+  }
+  th, td { padding: 10px 12px; text-align: center; }
+  th { background: #007bff; color: #fff; }
+  tbody tr:nth-child(even) { background: #f8f9fa; }
+  tbody tr:hover { background: #d1ecf1; cursor: pointer; }
+
+  button[id^="export"], #genReport {
+    display: inline-block; margin: 5px; padding: 8px 14px;
+    border: none; border-radius: 6px; background: #17a2b8;
+    color: #fff; font-weight: 600; transition: background 0.3s;
+  }
+  button[id^="export"]:hover, #genReport:hover { background: #138496; }
+
+  @media(max-width: 600px){
+    nav { flex-direction: column; align-items: center; }
+    input[type="text"], input[type="file"], button[id^="export"], #genReport { width: 90%; max-width: 300px; }
+    table, canvas { width: 90%; }
+  }
 </style>
 </head>
 <body>
-<h1>📌 QR Attendance System</h1>
+<h1>QR Attendance System</h1>
 
 <nav>
-  <button onclick="openTab('scanTab')">📷 Scan</button>
-  <button onclick="openTab('reportTab')">📊 Report</button>
+  <button data-tab="gen">Generate QR</button>
+  <button data-tab="scan">Scan QR</button>
+  <button data-tab="students">Students</button>
+  <button data-tab="attendance">Attendance</button>
+  <button data-tab="reports">Reports</button>
 </nav>
 
-<!-- Scan Tab -->
-<div id="scanTab" class="tab active">
-  <h2>Scan Attendance</h2>
-  <video id="preview" autoplay></video><br>
-  <button id="startScan">▶️ Start Scan</button>
-  <button id="stopScan">⏹ Stop Scan</button>
-  <p id="scanResult">Not scanning...</p>
+<!-- Generate QR -->
+<div id="gen" class="tab">
+  <h2>Generate QR Code</h2>
+  <label>Roll: <input id="genRoll"></label><br>
+  <label>Name: <input id="genName"></label><br>
+  <label>Class: <input id="genClass"></label><br>
+  <button id="genBtn">Generate</button>
+  <canvas id="qrCanvas" width="300" height="300"></canvas><br>
+  <a id="downloadBtn" style="display:none">Download QR</a>
+  <div id="genStatus"></div>
 </div>
 
-<!-- Report Tab -->
-<div id="reportTab" class="tab">
-  <h2>Generate Report</h2>
-  <label>Month: <input type="month" id="reportMonth"></label>
-  <label>Working Days: <input type="number" id="workingDays" min="1"></label>
-  <button id="genReport">Generate</button>
+<!-- Scan QR -->
+<div id="scan" class="tab">
+  <h2>Scan QR Code</h2>
+  <video id="preview" width="300" height="200" style="border:1px solid #ccc"></video><br>
+  <div id="scanControls">
+    <button id="startScan">Start Scan</button>
+    <button id="stopScan">Stop Scan</button>
+  </div>
+  <div id="scanResult"></div>
+  <h3>Attendance History for Scanned Student</h3>
+  <ul id="scanHistory"></ul>
+</div>
 
-  <h3>Student Report</h3>
+<!-- Students -->
+<div id="students" class="tab">
+  <h2>Students</h2>
+  <input type="file" id="importCSV" accept=".csv">
+  <button id="exportStudents">Export Students CSV</button>
+  <ul id="stuList"></ul>
+</div>
+
+<!-- Attendance -->
+<div id="attendance" class="tab">
+  <h2>Attendance Records</h2>
+  <button id="exportRawAttendance">Export Raw Attendance CSV</button>
+  <button id="exportStudentReport">Export Student Report CSV</button>
+  <button id="exportClassReport">Export Class Report CSV</button>
+  <ul id="attList"></ul>
+</div>
+
+<!-- Reports -->
+<div id="reports" class="tab">
+  <h2>Monthly Attendance Report</h2>
+  <button id="genReport">Generate Report</button>
+
+  <h3>Student-wise Report</h3>
   <table id="reportTable">
     <thead>
       <tr>
         <th>Roll</th><th>Name</th><th>Class</th><th>Month</th>
-        <th>Attended</th><th>Working Days</th><th>%</th>
+        <th>Days Attended</th><th>Total Days</th><th>%</th>
       </tr>
     </thead>
     <tbody></tbody>
   </table>
 
-  <h3>Class Report</h3>
+  <h3>Class-wise Report</h3>
   <table id="classReportTable">
     <thead>
       <tr>
         <th>Class</th><th>Month</th><th>Total Students</th>
-        <th>Working Days</th><th>Total Attendance</th><th>Overall %</th>
+        <th>Total Days</th><th>Total Attendance</th><th>%</th>
       </tr>
     </thead>
     <tbody></tbody>
   </table>
 </div>
 
+<!-- Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/qrious/dist/qrious.min.js"></script>
 <script src="https://unpkg.com/@zxing/library@latest"></script>
+
 <script>
-/* ---------- Tab Switching ---------- */
-function openTab(tabId){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById(tabId).classList.add('active');
-}
+// ---------- Storage ----------
+function loadStudents(){ return JSON.parse(localStorage.getItem('students')||'[]'); }
+function saveStudents(data){ localStorage.setItem('students',JSON.stringify(data)); }
+function loadAttendance(){ return JSON.parse(localStorage.getItem('attendance')||'[]'); }
+function saveAttendance(data){ localStorage.setItem('attendance',JSON.stringify(data)); }
 
-/* ---------- IndexedDB Setup ---------- */
-let db;
-const request=indexedDB.open("AttendanceDB",1);
-request.onupgradeneeded=e=>{
-  db=e.target.result;
-  const store=db.createObjectStore("attendance",{keyPath:"id",autoIncrement:true});
-  store.createIndex("roll","roll",{unique:false});
-  store.createIndex("date","date",{unique:false});
-};
-request.onsuccess=e=>{ db=e.target.result; };
-request.onerror=e=>{ console.error("DB error",e); };
+// ---------- Tabs ----------
+document.querySelectorAll('nav button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.getElementById(btn.dataset.tab).classList.add('active');
+    if(btn.dataset.tab==='students') renderStudents();
+    if(btn.dataset.tab==='attendance') renderAttendance();
+  });
+});
+document.querySelector('nav button').click(); // default
 
-/* ---------- Save Attendance ---------- */
-function markAttendance(roll,name,className){
-  const date=new Date().toISOString().slice(0,10);
-  const tx=db.transaction("attendance","readwrite");
-  const store=tx.objectStore("attendance");
-  const record={roll,name,class:className,date};
-  store.add(record);
+// ---------- Generate QR ----------
+const genBtn=document.getElementById('genBtn');
+const qrCanvas=document.getElementById('qrCanvas');
+const downloadBtn=document.getElementById('downloadBtn');
+const status=document.getElementById('genStatus');
+genBtn.addEventListener('click', ()=>{
+  const roll=document.getElementById('genRoll').value.trim();
+  let name=document.getElementById('genName').value.trim();
+  let cls=document.getElementById('genClass').value.trim();
+  if(!roll){ alert('Enter roll'); return; }
 
-  // Voice feedback
-  const msg=new SpeechSynthesisUtterance(`Attendance marked for ${name}, roll number ${roll}`);
-  speechSynthesis.speak(msg);
-}
+  const stuList=loadStudents();
+  const exists=stuList.find(s=>s.roll===roll);
+  if(exists){
+    status.innerHTML=`<small style="color:red">❌ QR already generated for: ${roll} — ${exists.name}</small>`;
+    return;
+  }
+  if(!name) name="Unknown";
+  if(!cls) cls="N/A";
 
-/* ---------- QR Scan ---------- */
-let codeReader,activeStream,lastScanned="";
-document.getElementById('startScan').addEventListener('click',async()=>{
+  stuList.push({ roll, name, class: cls });
+  saveStudents(stuList);
+
+  const payload=`${roll}|${name}|${cls}`;
+  new QRious({ element: qrCanvas, value: payload, size: 300 });
+  const dataUrl=qrCanvas.toDataURL('image/png');
+  downloadBtn.href=dataUrl;
+  downloadBtn.download=`qr_${roll}.png`;
+  downloadBtn.style.display='inline-block';
+  status.innerHTML=`<small style="color:green">✔ QR generated: <code>${payload}</code></small>`;
+});
+
+// ---------- Continuous Scanner ----------
+let codeReader=null;
+let activeStream=null;
+let lastScanned="";
+
+document.getElementById('startScan').addEventListener('click', async()=>{
   if(!codeReader) codeReader=new ZXing.BrowserQRCodeReader();
   const preview=document.getElementById('preview');
+
   try{
-    if(activeStream) activeStream.getTracks().forEach(t=>t.stop());
-    activeStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
-    preview.srcObject=activeStream;
-    preview.setAttribute("playsinline",true);
+    if(activeStream){ activeStream.getTracks().forEach(track=>track.stop()); }
+
+    activeStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+    preview.srcObject = activeStream;
+    preview.setAttribute("playsinline", true);
     await preview.play();
 
-    codeReader.decodeFromVideoDevice(null,preview,(result,err)=>{
+    codeReader.decodeFromVideoDevice(null, preview, (result, err)=>{
       if(result){
         const payload=result.getText();
         if(payload!==lastScanned){
           lastScanned=payload;
           document.getElementById('scanResult').textContent="Scanned: "+payload;
-          const [roll,name,className]=payload.split(",");
-          markAttendance(roll,name,className);
+          handleScan(payload);
           setTimeout(()=>{ lastScanned=""; },2000);
         }
       }
     });
-  }catch(e){ console.error("Camera error:",e); alert("Camera access failed"); }
+  }catch(e){ console.error("Camera error:", e); alert("Could not access camera. Check permissions."); }
 });
 
-document.getElementById('stopScan').addEventListener('click',()=>{
+document.getElementById('stopScan').addEventListener('click', ()=>{
   if(activeStream){
-    activeStream.getTracks().forEach(t=>t.stop());
+    activeStream.getTracks().forEach(track=>track.stop());
     activeStream=null;
     document.getElementById('scanResult').textContent="Scan stopped.";
   }
 });
 
-/* ---------- Generate Report ---------- */
-function calculateMonthlyReport(month,workingDays){
-  return new Promise((resolve,reject)=>{
-    const tx=db.transaction("attendance","readonly");
-    const store=tx.objectStore("attendance");
-    const req=store.getAll();
-    req.onsuccess=()=>{
-      const data=req.result.filter(r=>r.date.startsWith(month));
-      const students={},classReport={};
+// ---------- Handle Scan + Voice ----------
+function handleScan(payload){
+  let roll=payload,name='',cls='';
+  if(payload.includes('|')){ [roll,name,cls]=payload.split('|'); }
+  roll=roll.trim(); name=(name||'Unknown').trim(); cls=(cls||'N/A').trim();
 
-      data.forEach(r=>{
-        const key=r.roll+"|"+r.class+"|"+month;
-        if(!students[key]) students[key]={roll:r.roll,name:r.name,class:r.class,attended:0};
-        students[key].attended+=1;
-      });
+  const recs=loadAttendance();
+  const today=new Date().toISOString().slice(0,10);
 
-      const studentRows=[];
-      for(const k in students){
-        const s=students[k];
-        const perc=((s.attended/workingDays)*100).toFixed(1);
-        studentRows.push({roll:s.roll,name:s.name,class:s.class,month,attended:s.attended,workingDays,perc});
-      }
+  const scanResultDiv = document.getElementById('scanResult');
 
-      studentRows.forEach(r=>{
-        const key=`${r.class}|${month}`;
-        if(!classReport[key]) classReport[key]={class:r.class,month,totalStudents:0,totalAttendance:0};
-        classReport[key].totalStudents+=1;
-        classReport[key].totalAttendance+=r.attended;
-      });
+  if(recs.find(r=>r.roll===roll && r.date===today)){
+    scanResultDiv.textContent = `❌ Already marked today: ${roll} — ${name}`;
+    showStudentHistory(roll);
+    return;
+  }
 
-      const classRows=[];
-      for(const k in classReport){
-        const c=classReport[k];
-        const maxPossible=c.totalStudents*workingDays;
-        const perc=((c.totalAttendance/maxPossible)*100).toFixed(1);
-        classRows.push({class:c.class,month,totalStudents:c.totalStudents,workingDays,totalAttendance:c.totalAttendance,perc});
-      }
+  recs.unshift({ roll, name, class: cls, ts: Date.now(), date: today });
+  saveAttendance(recs);
 
-      resolve({studentRows,classRows});
-    };
-    req.onerror=e=>reject(e);
+  scanResultDiv.textContent = `✅ Attendance marked for ${roll} — ${name}`;
+  speak(`Attendance marked for ${name}, roll number ${roll}`);
+  showStudentHistory(roll);
+}
+
+// ---------- Voice Function ----------
+function speak(text){
+  if('speechSynthesis' in window){
+    const msg = new SpeechSynthesisUtterance(text);
+    msg.lang = "en-IN"; // Indian English accent
+    window.speechSynthesis.speak(msg);
+  }
+}
+
+// ---------- Show Student History ----------
+function showStudentHistory(roll){
+  const recs=loadAttendance().filter(r=>r.roll===roll);
+  const ul=document.getElementById('scanHistory');
+  ul.innerHTML='';
+  recs.forEach(r=>{
+    const li=document.createElement('li');
+    li.textContent=`${r.date} — ${r.roll} — ${r.name} — Class: ${r.class}`;
+    ul.appendChild(li);
   });
 }
 
-document.getElementById('genReport').addEventListener('click',async()=>{
-  const month=document.getElementById('reportMonth').value;
-  const workingDays=parseInt(document.getElementById('workingDays').value);
-  if(!month||!workingDays){ alert("Enter both month and working days"); return; }
+// ---------- Render Students ----------
+function renderStudents(){
+  const ul=document.getElementById('stuList');
+  ul.innerHTML='';
+  loadStudents().forEach(s=>{
+    const li=document.createElement('li');
+    li.textContent=`${s.roll} — ${s.name} — Class: ${s.class}`;
+    ul.appendChild(li);
+  });
+}
 
-  const {studentRows,classRows}=await calculateMonthlyReport(month,workingDays);
+// ---------- Render Attendance ----------
+function renderAttendance(){
+  const ul=document.getElementById('attList');
+  ul.innerHTML='';
+  loadAttendance().forEach(r=>{
+    const li=document.createElement('li');
+    const time=new Date(r.ts).toLocaleTimeString();
+    li.textContent=`${r.date} ${time} — ${r.roll} — ${r.name} — Class: ${r.class}`;
+    ul.appendChild(li);
+  });
+}
 
-  const tbody=document.querySelector('#reportTable tbody');
-  tbody.innerHTML="";
-  studentRows.forEach(r=>{
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${r.roll}</td><td>${r.name}</td><td>${r.class}</td><td>${r.month}</td>
-      <td>${r.attended}</td><td>${r.workingDays}</td><td>${r.perc}%</td>`;
-    tbody.appendChild(tr);
+// ---------- CSV Export/Import ----------
+function downloadCSV(data,filename){
+  const blob=new Blob([data],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+document.getElementById('exportStudents').addEventListener('click', ()=>{
+  const stu=loadStudents();
+  let csv="roll,name,class\n";
+  stu.forEach(s=>{ csv+=`${s.roll},${s.name},${s.class}\n`; });
+  downloadCSV(csv,"students.csv");
+});
+
+document.getElementById('exportRawAttendance').addEventListener('click', ()=>{
+  const recs=loadAttendance();
+  let csv="roll,name,class,timestamp,date\n";
+  recs.forEach(r=>{ csv+=`${r.roll},${r.name},${r.class},${r.ts},${r.date}\n`; });
+  downloadCSV(csv,"attendance_raw.csv");
+});
+
+document.getElementById('exportStudentReport').addEventListener('click', ()=>{
+  const { studentRows } = calculateMonthlyReport();
+  let csv="roll,name,class,month,attended,totalDays,percentage\n";
+  studentRows.forEach(r=>{ csv+=`${r.roll},${r.name},${r.class},${r.month},${r.attended},${r.totalDays},${r.perc}%\n`; });
+  downloadCSV(csv,"student_report.csv");
+});
+
+document.getElementById('exportClassReport').addEventListener('click', ()=>{
+  const { classRows } = calculateMonthlyReport();
+  let csv="class,month,totalStudents,totalDays,totalAttendance,percentage\n";
+  classRows.forEach(c=>{ csv+=`${c.class},${c.month},${c.totalStudents},${c.totalDays},${c.totalAttendance},${c.perc}%\n`; });
+  downloadCSV(csv,"class_report.csv");
+});
+
+document.getElementById('importCSV').addEventListener('change', e=>{
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=ev=>importCSV(ev.target.result);
+  reader.readAsText(file);
+});
+function importCSV(text){
+  const lines=(text||'').trim().split(/\r?\n/);
+  const stu=loadStudents();
+  lines.forEach(line=>{
+    const [rollRaw,nameRaw,classRaw] = line.split(',');
+    const roll=(rollRaw||'').trim();
+    const name=(nameRaw||'').trim();
+    const cls =(classRaw||'N/A').trim();
+    if(roll && name && !stu.find(s=>s.roll===roll)){
+      stu.push({ roll, name, class: cls });
+    }
+  });
+  saveStudents(stu); renderStudents();
+}
+
+// ---------- Reports ----------
+function calculateMonthlyReport(){
+  const recs=loadAttendance();
+  const studentReport={}, classReport={};
+
+  recs.forEach(r=>{
+    const d=new Date(r.date);
+    const monthKey=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    const stuKey=`${r.roll}|${monthKey}`;
+    if(!studentReport[stuKey]){
+      studentReport[stuKey]={ roll:r.roll, name:r.name, class:r.class, month:monthKey, days:new Set() };
+    }
+    studentReport[stuKey].days.add(r.date);
   });
 
+  const studentRows=[];
+  for(const k in studentReport){
+    const r=studentReport[k];
+    const [year,mon]=r.month.split('-').map(Number);
+    const totalDays=new Date(year,mon,0).getDate();
+    const attended=r.days.size;
+    const perc=((attended/totalDays)*100).toFixed(1);
+    studentRows.push({ roll:r.roll, name:r.name, class:r.class, month:r.month, attended, totalDays, perc });
+  }
+
+  studentRows.forEach(r=>{
+    const key=`${r.class}|${r.month}`;
+    if(!classReport[key]){
+      classReport[key]={ class:r.class, month:r.month, totalStudents:0, totalDays:r.totalDays, totalAttendance:0 };
+    }
+    classReport[key].totalStudents+=1;
+    classReport[key].totalAttendance+=r.attended;
+  });
+
+  const classRows=[];
+  for(const k in classReport){
+    const c=classReport[k];
+    const maxPossible=c.totalStudents*c.totalDays;
+    const perc=((c.totalAttendance/maxPossible)*100).toFixed(1);
+    classRows.push({ class:c.class, month:c.month, totalStudents:c.totalStudents, totalDays:c.totalDays, totalAttendance:c.totalAttendance, perc });
+  }
+  return { studentRows, classRows };
+}
+
+document.getElementById('genReport').addEventListener('click', ()=>{
+  const { studentRows, classRows }=calculateMonthlyReport();
+  const tbody=document.querySelector('#reportTable tbody');
+  tbody.innerHTML='';
+  studentRows.forEach(r=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${r.roll}</td><td>${r.name}</td><td>${r.class}</td><td>${r.month}</td><td>${r.attended}</td><td>${r.totalDays}</td><td>${r.perc}%</td>`;
+    tbody.appendChild(tr);
+  });
   const tbody2=document.querySelector('#classReportTable tbody');
-  tbody2.innerHTML="";
+  tbody2.innerHTML='';
   classRows.forEach(c=>{
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${c.class}</td><td>${c.month}</td><td>${c.totalStudents}</td>
-      <td>${c.workingDays}</td><td>${c.totalAttendance}</td><td>${c.perc}%</td>`;
+    tr.innerHTML=`<td>${c.class}</td><td>${c.month}</td><td>${c.totalStudents}</td><td>${c.totalDays}</td><td>${c.totalAttendance}</td><td>${c.perc}%</td>`;
     tbody2.appendChild(tr);
   });
 });
