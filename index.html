@@ -1,317 +1,307 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>QR Attendance — Full Prototype</title>
-
-  <style>
-    body{font-family:system-ui,Arial;margin:18px;background:#f6f8fb;color:#111}
-    .box{max-width:950px;margin:0 auto;background:#fff;padding:14px;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,0.06)}
-    h1{margin:0 0 8px 0}
-    .row{display:flex;gap:8px;align-items:center;margin:6px 0;flex-wrap:wrap}
-    input[type=text],textarea{flex:1;padding:8px;border-radius:6px;border:1px solid #ddd}
-    button{padding:8px 12px;border-radius:8px;border:0;background:#1f6feb;color:#fff;cursor:pointer}
-    button.ghost{background:#eee;color:#111}
-    canvas#qrCanvas{display:block;margin:12px 0;border:1px solid #ddd;border-radius:8px}
-    #video{width:100%;max-height:360px;border-radius:8px;border:1px solid #ddd;object-fit:cover}
-    small{color:#666}
-    #records{margin-top:12px;padding-left:18px}
-    a.download{display:inline-block;margin-left:8px}
-    textarea{width:100%;height:80px}
-  </style>
-
-  <!-- Libraries -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<meta charset="UTF-8">
+<title>QR Attendance System</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 20px; }
+  nav button { margin: 5px; padding: 8px 12px; }
+  .tab { display: none; margin-top: 20px; }
+  .active { display: block; }
+  canvas { margin-top: 10px; }
+  table { margin-top: 10px; border-collapse: collapse; }
+  th, td { padding: 6px 12px; border: 1px solid #ccc; }
+</style>
 </head>
 <body>
-  <div class="box">
-    <h1>QR Attendance For Rural Schools</h1>
 
-    <!-- QR GENERATION -->
-    <section>
-      <h3>Generate QR</h3>
-      <div class="row">
-        <input id="genclass" type="text" placeholder="Enter Class" />
-        <input id="genRoll" type="text" placeholder="Roll" />
-        <input id="genName" type="text" placeholder="Enter Name" />
-        <button id="genBtn">Generate</button>
-        <a id="downloadBtn" class="download" href="#" download style="display:none">Download PNG</a>
-      </div>
-      <small>Payload format: <code>roll|name</code></small>
-      <canvas id="qrCanvas" width="200" height="200"></canvas>
-    </section>
+<h1>QR Attendance System</h1>
 
-    <hr/>
+<nav>
+  <button data-tab="gen">Generate QR</button>
+  <button data-tab="scan">Scan QR</button>
+  <button data-tab="students">Students</button>
+  <button data-tab="attendance">Attendance</button>
+  <button data-tab="reports">Reports</button>
+</nav>
 
-    <!-- SCANNER -->
-    <section>
-      <h3>Scan QR (camera)</h3>
-      <video id="video" autoplay playsinline muted></video>
-      <div class="row" style="margin-top:8px">
-        <button id="startBtn">Start Camera</button>
-        <button id="stopBtn" class="ghost">Stop</button>
-        <button id="uploadBtn" class="ghost">Upload Image</button>
-        <input id="fileInput" type="file" accept="image/*" style="display:none" />
-      </div>
-      <div id="status" style="margin-top:8px"><small>Status: idle</small></div>
-    </section>
+<!-- Generate QR -->
+<div id="gen" class="tab">
+  <h2>Generate QR Code</h2>
+  <label>Roll: <input id="genRoll"></label><br>
+  <label>Name: <input id="genName"></label><br>
+  <label>Class: <input id="genClass"></label><br>
+  <button id="genBtn">Generate</button>
+  <canvas id="qrCanvas" width="300" height="300"></canvas><br>
+  <a id="downloadBtn" style="display:none">Download QR</a>
+  <div id="genStatus"></div>
+</div>
 
-    <hr/>
+<!-- Scan QR -->
+<div id="scan" class="tab">
+  <h2>Scan QR Code</h2>
+  <video id="preview" width="300" height="200" style="border:1px solid #ccc"></video><br>
+  <button id="startScan">Start Scan</button>
+  <div id="scanResult"></div>
+</div>
 
-    <!-- ATTENDANCE -->
-    <section>
-      <h3>Attendance (local)</h3>
-      <div class="row">
-        <button id="exportAll">Export Attendance CSV</button>
-        <button id="clearAll" class="ghost">Clear All</button>
-      </div>
-      <ul id="records"></ul>
-    </section>
+<!-- Students -->
+<div id="students" class="tab">
+  <h2>Students</h2>
+  <input type="file" id="importCSV" accept=".csv">
+  <button id="exportStudents">Export Students CSV</button>
+  <ul id="stuList"></ul>
+</div>
 
-    <hr/>
+<!-- Attendance -->
+<div id="attendance" class="tab">
+  <h2>Attendance Records</h2>
+  <button id="exportAttendance">Export Attendance CSV</button>
+  <ul id="attList"></ul>
+</div>
 
-    <!-- STUDENTS -->
-    <section>
-      <h3>Student List (CSV)</h3>
-      <div class="row">
-        <input type="file" id="studentFile" accept=".csv"/>
-        <button id="importFileBtn">Import File</button>
-        <button id="exportStudents">Export Students</button>
-      </div>
-      <textarea id="studentTextarea" placeholder="Paste CSV: roll,name"></textarea>
-      <button id="importTextareaBtn">Import from Textarea</button>
-      <ul id="students"></ul>
-    </section>
-    
-    <a href="index2.html">
-      <button>👩‍🏫 For QR Regeneration</button>
-    </a>
-  </div>
+<!-- Reports -->
+<div id="reports" class="tab">
+  <h2>Monthly Attendance Report</h2>
+  <button id="genReport">Generate Report</button>
+
+  <h3>Student-wise Report</h3>
+  <table id="reportTable">
+    <thead>
+      <tr>
+        <th>Roll</th><th>Name</th><th>Class</th><th>Month</th>
+        <th>Days Attended</th><th>Total Days</th><th>%</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <h3>Class-wise Report</h3>
+  <table id="classReportTable">
+    <thead>
+      <tr>
+        <th>Class</th><th>Month</th><th>Total Students</th>
+        <th>Total Days</th><th>Total Attendance</th><th>%</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<!-- Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/qrious/dist/qrious.min.js"></script>
+<script src="https://unpkg.com/@zxing/library@latest"></script>
 
 <script>
-document.addEventListener('DOMContentLoaded', ()=>{
+// ---------- Storage ----------
+function loadStudents(){ return JSON.parse(localStorage.getItem('students')||'[]'); }
+function saveStudents(data){ localStorage.setItem('students',JSON.stringify(data)); }
+function loadAttendance(){ return JSON.parse(localStorage.getItem('attendance')||'[]'); }
+function saveAttendance(data){ localStorage.setItem('attendance',JSON.stringify(data)); }
 
-  // Storage keys
-  const ATT_KEY = 'qr_att_records_v1';
-  const STU_KEY = 'qr_students_v1';
+// ---------- Tabs ----------
+document.querySelectorAll('nav button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.getElementById(btn.dataset.tab).classList.add('active');
+    if(btn.dataset.tab==='students') renderStudents();
+    if(btn.dataset.tab==='attendance') renderAttendance();
+  });
+});
+document.querySelector('nav button').click(); // default
 
-  // helpers
-  function load(key){ try{ return JSON.parse(localStorage.getItem(key) || '[]'); } catch(e){ return []; } }
-  function save(key,val){ localStorage.setItem(key,JSON.stringify(val)); }
+// ---------- Generate QR ----------
+const genBtn=document.getElementById('genBtn');
+const qrCanvas=document.getElementById('qrCanvas');
+const downloadBtn=document.getElementById('downloadBtn');
+const status=document.getElementById('genStatus');
+genBtn.addEventListener('click', ()=>{
+  const roll=document.getElementById('genRoll').value.trim();
+  let name=document.getElementById('genName').value.trim();
+  let cls=document.getElementById('genClass').value.trim();
+  if(!roll){ alert('Enter roll'); return; }
 
-  // attendance
-  function loadAttendance(){ return load(ATT_KEY); }
-  function saveAttendance(v){ save(ATT_KEY,v); renderRecords(); }
-  function renderRecords(){
-    const arr = loadAttendance();
-    recordsUl.innerHTML = '';
-    arr.forEach((r,i)=>{
-      const li = document.createElement('li');
-      const time = r.ts ? new Date(r.ts).toLocaleTimeString() : '';
-      li.textContent = `${r.date} ${time} — ${r.roll} — ${r.name}`;
-      recordsUl.appendChild(li);
-    });
+  const stuList=loadStudents();
+  const exists=stuList.find(s=>s.roll===roll);
+  if(exists){
+    status.innerHTML=`<small style="color:red">❌ QR already generated for: ${roll} — ${exists.name}</small>`;
+    return;
   }
+  if(!name) name="Unknown";
+  if(!cls) cls="N/A";
 
-  // students
-  function loadStudents(){ return load(STU_KEY); }
-  function saveStudents(v){ save(STU_KEY,v); renderStudents(); }
-  function renderStudents(){
-    const arr = loadStudents();
-    studentsUl.innerHTML = '';
-    arr.forEach(s=>{
-      const li = document.createElement('li');
-      li.textContent = `${s.roll} — ${s.name}`;
-      studentsUl.appendChild(li);
-    });
+  stuList.push({ roll, name, class: cls });
+  saveStudents(stuList);
+
+  const payload=`${roll}|${name}|${cls}`;
+  new QRious({ element: qrCanvas, value: payload, size: 300 });
+  const dataUrl=qrCanvas.toDataURL('image/png');
+  downloadBtn.href=dataUrl;
+  downloadBtn.download=`qr_${roll}.png`;
+  downloadBtn.style.display='inline-block';
+  status.innerHTML=`<small style="color:green">✔ QR generated: <code>${payload}</code></small>`;
+});
+
+// ---------- Scanner ----------
+let codeReader=null;
+document.getElementById('startScan').addEventListener('click', async()=>{
+  if(!codeReader) codeReader=new ZXing.BrowserQRCodeReader();
+  const preview=document.getElementById('preview');
+  try{
+    const result=await codeReader.decodeOnceFromVideoDevice(undefined,preview);
+    document.getElementById('scanResult').textContent="Scanned: "+result.text;
+    handleScan(result.text);
+  }catch(e){ console.error(e); }
+});
+
+function handleScan(payload){
+  let roll=payload,name='',cls='';
+  if(payload.includes('|')){
+    [roll,name,cls]=payload.split('|');
   }
+  roll=roll.trim(); name=(name||'Unknown').trim(); cls=(cls||'N/A').trim();
+  const recs=loadAttendance();
+  const today=new Date().toISOString().slice(0,10);
+  if(recs.find(r=>r.roll===roll && r.date===today)){
+    alert("Already marked today"); return;
+  }
+  recs.unshift({ roll, name, class: cls, ts: Date.now(), date: today });
+  saveAttendance(recs);
+  alert("Attendance marked for "+roll);
+}
 
-  // DOM refs
-  const genRoll = document.getElementById('genRoll');
-  const genName = document.getElementById('genName');
-  const genclass = document.getElementById('genclass')
-  const genBtn = document.getElementById('genBtn');
-  const qrCanvas = document.getElementById('qrCanvas');
-  const downloadBtn = document.getElementById('downloadBtn');
-  const video = document.getElementById('video');
-  const startBtn = document.getElementById('startBtn');
-  const stopBtn = document.getElementById('stopBtn');
-  const uploadBtn = document.getElementById('uploadBtn');
-  const fileInput = document.getElementById('fileInput');
-  const status = document.getElementById('status');
-  const recordsUl = document.getElementById('records');
-  const clearAll = document.getElementById('clearAll');
-  const exportAll = document.getElementById('exportAll');
-  const studentsUl = document.getElementById('students');
-  const studentFile = document.getElementById('studentFile');
-  const importFileBtn = document.getElementById('importFileBtn');
-  const exportStudents = document.getElementById('exportStudents');
-  const studentTextarea = document.getElementById('studentTextarea');
-  const importTextareaBtn = document.getElementById('importTextareaBtn');
+// ---------- Render Students ----------
+function renderStudents(){
+  const ul=document.getElementById('stuList');
+  ul.innerHTML='';
+  loadStudents().forEach(s=>{
+    const li=document.createElement('li');
+    li.textContent=`${s.roll} — ${s.name} — Class: ${s.class}`;
+    ul.appendChild(li);
+  });
+}
 
-  renderRecords();
+// ---------- Render Attendance ----------
+function renderAttendance(){
+  const ul=document.getElementById('attList');
+  ul.innerHTML='';
+  loadAttendance().forEach(r=>{
+    const li=document.createElement('li');
+    const time=new Date(r.ts).toLocaleTimeString();
+    li.textContent=`${r.date} ${time} — ${r.roll} — ${r.name} — Class: ${r.class}`;
+    ul.appendChild(li);
+  });
+}
+
+// ---------- Export CSV ----------
+document.getElementById('exportStudents').addEventListener('click', ()=>{
+  const stu=loadStudents();
+  let csv="roll,name,class\n";
+  stu.forEach(s=>{ csv+=`${s.roll},${s.name},${s.class}\n`; });
+  downloadCSV(csv,"students.csv");
+});
+document.getElementById('exportAttendance').addEventListener('click', ()=>{
+  const recs=loadAttendance();
+  let csv="roll,name,class,timestamp,date\n";
+  recs.forEach(r=>{ csv+=`${r.roll},${r.name},${r.class},${r.ts},${r.date}\n`; });
+  downloadCSV(csv,"attendance.csv");
+});
+function downloadCSV(data,filename){
+  const blob=new Blob([data],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ---------- Import Students CSV ----------
+document.getElementById('importCSV').addEventListener('change', e=>{
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=ev=>importCSV(ev.target.result);
+  reader.readAsText(file);
+});
+function importCSV(text){
+  const lines=(text||'').trim().split(/\r?\n/);
+  const stu=loadStudents();
+  lines.forEach(line=>{
+    const [rollRaw,nameRaw,classRaw] = line.split(',');
+    const roll=(rollRaw||'').trim();
+    const name=(nameRaw||'').trim();
+    const cls =(classRaw||'N/A').trim();
+    if(roll && name && !stu.find(s=>s.roll===roll)){
+      stu.push({ roll, name, class: cls });
+    }
+  });
+  saveStudents(stu);
   renderStudents();
+}
 
-  // ✅ QR generation with duplicate check
-  genBtn.addEventListener('click', ()=>{
-    const roll = genRoll.value.trim();
-    let name = genName.value.trim();
-    if(!roll){ alert('Enter roll'); return; }
+// ---------- Reports ----------
+function calculateMonthlyReport(){
+  const recs=loadAttendance();
+  const studentReport={}, classReport={};
 
-    const stuList = loadStudents();
-    const exists = stuList.find(s => s.roll === roll && s.name.toLowerCase() === name.toLowerCase());
-
-    if(exists){
-      status.innerHTML = `<small style="color:red">❌ QR already generated for: ${roll} — ${name}</small>`;
-      return;
+  recs.forEach(r=>{
+    const d=new Date(r.date);
+    const monthKey=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    const stuKey=`${r.roll}|${monthKey}`;
+    if(!studentReport[stuKey]){
+      studentReport[stuKey]={ roll:r.roll, name:r.name, class:r.class, month:monthKey, days:new Set() };
     }
-
-    if(!name){
-      const stu = stuList.find(s => s.roll === roll);
-      if(stu) name = stu.name;
-    }
-
-    // add new student if not exists
-    if(!stuList.find(s => s.roll === roll)){
-      stuList.push({roll, name: name || 'Unknown'});
-      saveStudents(stuList);
-    }
-
-    const payload = name ? `${roll}|${name}` : roll;
-    // draw QR on canvas
-    new QRious({ element: qrCanvas, value: payload, size: 300 });
-    const dataUrl = qrCanvas.toDataURL('image/png');
-    downloadBtn.href = dataUrl;
-    downloadBtn.download = `qr_${roll}.png`;
-    downloadBtn.style.display = 'inline-block';
-    status.innerHTML = `<small style="color:green">✔ QR generated: <code>${payload}</code></small>`;
+    studentReport[stuKey].days.add(r.date);
   });
 
-  // Camera scanner
-  let stream = null; let scanning = false;
-  const hiddenCanvas = document.createElement('canvas');
+  const studentRows=[];
+  for(const k in studentReport){
+    const r=studentReport[k];
+    const [year,mon]=r.month.split('-').map(Number);
+    const totalDays=new Date(year,mon,0).getDate();
+    const attended=r.days.size;
+    const perc=((attended/totalDays)*100).toFixed(1);
+    studentRows.push({ roll:r.roll,name:r.name,class:r.class,month:r.month,attended,totalDays,perc });
 
-  async function startCamera(){
-    try{
-      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }});
-      video.srcObject = stream;
-      await video.play();
-      scanning = true;
-      scanTick();
-      status.innerHTML = '<small>Status: scanning...</small>';
-    }catch(e){ alert('Camera error: ' + e); }
-  }
-  function stopCamera(){ scanning = false; if(stream){ stream.getTracks().forEach(t=>t.stop()); } video.srcObject = null; status.innerHTML = '<small>Status: stopped</small>'; }
-
-  function scanTick(){
-    if(!scanning) return;
-    if(video.readyState === video.HAVE_ENOUGH_DATA){
-      hiddenCanvas.width = video.videoWidth;
-      hiddenCanvas.height = video.videoHeight;
-      const ctx = hiddenCanvas.getContext('2d');
-      ctx.drawImage(video, 0, 0);
-      const img = ctx.getImageData(0,0,hiddenCanvas.width,hiddenCanvas.height);
-      const code = jsQR(img.data, img.width, img.height);
-      if(code){ handlePayload(code.data); scanning = false; setTimeout(()=>{ scanning = true; scanTick(); }, 1500); return; }
+    const classKey=`${r.class}|${r.month}`;
+    if(!classReport[classKey]){
+      classReport[classKey]={ class:r.class, month:r.month, totalDays, totalStudents:0, totalAttendance:0 };
     }
-    requestAnimationFrame(scanTick);
+    classReport[classKey].totalStudents++;
+    classReport[classKey].totalAttendance+=attended;
   }
 
-  startBtn.onclick = startCamera;
-  stopBtn.onclick = stopCamera;
-  uploadBtn.onclick = ()=>fileInput.click();
-  fileInput.onchange = e=>{
-    const f = e.target.files[0]; if(!f) return;
-    const reader = new FileReader();
-    reader.onload = ev=>{
-      const img = new Image();
-      img.onload = ()=>{
-        hiddenCanvas.width = img.width; hiddenCanvas.height = img.height;
-        const ctx = hiddenCanvas.getContext('2d'); ctx.drawImage(img,0,0);
-        const data = ctx.getImageData(0,0,img.width,img.height);
-        const code = jsQR(data.data, data.width, data.height);
-        if(code) handlePayload(code.data); else alert('No QR found');
-      };
-      img.src = ev.target.result;
-    };
-    reader.readAsDataURL(f);
-  };
-
-  // ✅ Payload handler with duplicate check
-  function handlePayload(payload){
-    let roll = payload, name = '';
-    if(payload.includes('|')){ [roll, name] = payload.split('|'); }
-    roll = roll.trim(); name = (name || '').trim();
-    if(!name){
-      const stu = loadStudents().find(s => s.roll === roll);
-      if(stu) name = stu.name;
-    }
-    const recs = loadAttendance();
-    const today = new Date().toISOString().slice(0,10);
-
-    if(recs.some(r => r.roll === roll && r.date === today)){
-      status.innerHTML = `<small style="color:red">❌ Already marked today: ${roll} — ${name || 'Unknown'}</small>`;
-      return;
-    }
-
-    recs.unshift({ roll, name: name || 'Unknown', ts: Date.now(), date: today });
-    saveAttendance(recs);
-    status.innerHTML = `<small style="color:green">✔ Marked: ${roll} — ${name || 'Unknown'}</small>`;
+  const classRows=[];
+  for(const k in classReport){
+    const c=classReport[k];
+    const possible=c.totalStudents*c.totalDays;
+    const perc=((c.totalAttendance/possible)*100).toFixed(1);
+    classRows.push({ class:c.class, month:c.month, totalStudents:c.totalStudents,
+                     totalDays:c.totalDays, totalAttendance:c.totalAttendance, perc });
   }
+  return { studentRows, classRows };
+}
 
-  // Attendance export/clear
-  clearAll.onclick = ()=>{ if(confirm('Clear all?')){ localStorage.removeItem(ATT_KEY); renderRecords(); } };
-  exportAll.onclick = ()=>{
-    const recs = loadAttendance();
-    let csv = "roll,name,timestamp,date\n";
-    recs.forEach(r => { csv += `${r.roll},${r.name},${r.ts},${r.date}\n`; });
-    downloadCSV(csv,'attendance.csv');
-  };
+document.getElementById('genReport').addEventListener('click', ()=>{
+  const { studentRows, classRows } = calculateMonthlyReport();
 
-  // Students import/export
-  importFileBtn.onclick = ()=>{
-    const f = studentFile.files[0]; if(!f){ alert('Choose file'); return; }
-    const reader = new FileReader();
-    reader.onload = e=>{ importCSV(e.target.result); };
-    reader.readAsText(f);
-  };
-  importTextareaBtn.onclick = ()=>{ importCSV(studentTextarea.value); };
-  exportStudents.onclick = ()=>{
-    const stu = loadStudents();
-    let csv = "roll,name\n";
-    stu.forEach(s => { csv += `${s.roll},${s.name}\n`; });
-    downloadCSV(csv,'students.csv');
-  };
+  const tbody=document.querySelector('#reportTable tbody');
+  tbody.innerHTML='';
+  studentRows.forEach(r=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${r.roll}</td><td>${r.name}</td><td>${r.class}</td>
+                  <td>${r.month}</td><td>${r.attended}</td>
+                  <td>${r.totalDays}</td><td>${r.perc}%</td>`;
+    tbody.appendChild(tr);
+  });
 
-  function importCSV(text){
-    const lines = (text || '').trim().split(/\r?\n/);
-    const stu = loadStudents();
-    lines.forEach(line=>{
-      const [rollRaw, nameRaw] = line.split(',');
-      if(rollRaw && nameRaw){
-        const roll = rollRaw.trim();
-        const name = nameRaw.trim();
-        if(!stu.find(s=>s.roll===roll)){
-          stu.push({ roll, name });
-        }
-      }
-    });
-    saveStudents(stu);
-  }
-
-  function downloadCSV(data,filename){
-    const blob = new Blob([data], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = filename; a.click();
-    URL.revokeObjectURL(url);
-  }
-
+  const cbody=document.querySelector('#classReportTable tbody');
+  cbody.innerHTML='';
+  classRows.forEach(c=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${c.class}</td><td>${c.month}</td><td>${c.totalStudents}</td>
+                  <td>${c.totalDays}</td><td>${c.totalAttendance}</td><td>${c.perc}%</td>`;
+    cbody.appendChild(tr);
+  });
 });
 </script>
 </body>
 </html>
-
-
