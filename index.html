@@ -54,7 +54,7 @@ button[id^="export"]:hover,#genReport:hover{background:#138496;}
 <label>Name: <input id="genName"></label><br>
 <label>Class: <input id="genClass"></label><br>
 <button id="genBtn">Generate</button>
-<canvas id="qrCanvas" width="350" height="350"></canvas><br>
+<canvas id="qrCanvas" width="600" height="600"></canvas><br>
 <a id="downloadBtn" style="display:none">Download QR</a>
 <div id="genStatus"></div>
 </div>
@@ -161,7 +161,17 @@ genBtn.addEventListener('click',()=>{
   saveStudents(stuList);
 
   const payload=`ATT|${roll}|${name}|${cls}`;
-  new QRious({ element: qrCanvas, value: payload, size: 350, level:'H' });
+
+  // Generate large QR even for small text
+  new QRious({ 
+    element: qrCanvas, 
+    value: payload, 
+    size: 600,      // big QR size
+    level: 'H',     // high error correction
+    background: 'white',
+    foreground: 'black'
+  });
+
   const dataUrl=qrCanvas.toDataURL('image/png');
   downloadBtn.href=dataUrl;
   downloadBtn.download=`qr_${roll}.png`;
