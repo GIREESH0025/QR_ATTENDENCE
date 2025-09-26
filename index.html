@@ -143,6 +143,7 @@ const genBtn=document.getElementById('genBtn');
 const qrCanvas=document.getElementById('qrCanvas');
 const downloadBtn=document.getElementById('downloadBtn');
 const status=document.getElementById('genStatus');
+let qr=null;
 
 genBtn.addEventListener('click',()=>{
   const roll=document.getElementById('genRoll').value.trim();
@@ -162,18 +163,21 @@ genBtn.addEventListener('click',()=>{
 
   const payload=`ATT|${roll}|${name}|${cls}`;
 
-  // Generate large QR even for small text
-  new QRious({ 
-    element: qrCanvas, 
-    value: payload, 
-    size: 600,      // big QR size
-    level: 'H',     // high error correction
+  // Clear canvas before generating
+  const ctx = qrCanvas.getContext('2d');
+  ctx.clearRect(0,0,qrCanvas.width,qrCanvas.height);
+
+  // Generate QR code at 450x450
+  qr = new QRious({
+    element: qrCanvas,
+    value: payload,
+    size: 450,
+    level: 'H',
     background: 'white',
     foreground: 'black'
   });
 
-  const dataUrl=qrCanvas.toDataURL('image/png');
-  downloadBtn.href=dataUrl;
+  downloadBtn.href=qrCanvas.toDataURL('image/png');
   downloadBtn.download=`qr_${roll}.png`;
   downloadBtn.style.display='inline-block';
   status.innerHTML=`<small style="color:green">✔ QR generated: <code>${payload}</code></small>`;
@@ -353,4 +357,3 @@ document.getElementById('exportClassReport').addEventListener('click',()=>{
 </script>
 </body>
 </html>
-
