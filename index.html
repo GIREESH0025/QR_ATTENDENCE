@@ -122,7 +122,7 @@ document.querySelectorAll('nav button').forEach(btn=>{
     document.getElementById(btn.dataset.tab).classList.add('active');
     if(btn.dataset.tab==='students') renderStudents();
     if(btn.dataset.tab==='attendance') renderAttendance();
-    if(btn.dataset.tab==='scan') stopScan(); // stop old scan if switching
+    if(btn.dataset.tab==='scan') stopScan();
   });
 });
 document.querySelector('nav button').click(); // default
@@ -167,7 +167,6 @@ async function startScan(){
   const cameraSelect=document.getElementById('cameraSelect');
   const deviceId=cameraSelect.value||undefined;
 
-  // stop previous
   if(activeStream) stopScan();
 
   document.getElementById('startScan').style.display="none";
@@ -204,7 +203,7 @@ ZXing.BrowserQRCodeReader.listVideoInputDevices().then(devices=>{
     sel.appendChild(opt);
   });
   if(devices.length>1){
-    sel.value=devices[devices.length-1].deviceId; // prefer rear camera
+    sel.value=devices[devices.length-1].deviceId;
   }
 });
 
@@ -320,6 +319,7 @@ function importCSV(text){
 function calculateMonthlyReport(){
   const recs=loadAttendance();
   const studentReport={}, classReport={};
+
   recs.forEach(r=>{
     const d=new Date(r.date);
     const monthKey=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
@@ -329,14 +329,16 @@ function calculateMonthlyReport(){
     }
     studentReport[stuKey].days.add(r.date);
   });
+
   const studentRows=[];
   for(const k in studentReport){
     const r=studentReport[k];
     const [year,mon]=r.month.split('-').map(Number);
-    const totalDays=new Date(year,mon,0).getDate();
+    const totalDays=new Date(year, mon, 0).getDate();
     const attended=r.days.size;
-    const perc=((attended/totalDays)*100).toFixed(1);
+    const perc=parseFloat(((attended/totalDays)*100).toFixed(1));
     studentRows.push({ roll:r.roll,name:r.name,class:r.class,month:r.month,attended,totalDays,perc });
+
     const classKey=`${r.class}|${r.month}`;
     if(!classReport[classKey]){
       classReport[classKey]={ class:r.class,month:r.month,totalDays,totalStudents:0,totalAttendance:0 };
@@ -344,15 +346,18 @@ function calculateMonthlyReport(){
     classReport[classKey].totalStudents++;
     classReport[classKey].totalAttendance+=attended;
   }
+
   const classRows=[];
   for(const k in classReport){
     const c=classReport[k];
     const possible=c.totalStudents*c.totalDays;
-    const perc=((c.totalAttendance/possible)*100).toFixed(1);
+    const perc=parseFloat(((c.totalAttendance/possible)*100).toFixed(1));
     classRows.push({ ...c, perc });
   }
-  return { studentRows,classRows };
+
+  return { studentRows, classRows };
 }
+
 document.getElementById('genReport').addEventListener('click',()=>{
   const { studentRows,classRows }=calculateMonthlyReport();
   const tbody=document.querySelector('#reportTable tbody');
@@ -368,6 +373,7 @@ document.getElementById('genReport').addEventListener('click',()=>{
                   <td>${r.totalDays}</td><td>${r.perc}%</td>`;
     tbody.appendChild(tr);
   });
+
   const cbody=document.querySelector('#classReportTable tbody');
   cbody.innerHTML='';
   classRows.forEach(c=>{
