@@ -1,23 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>QR Attendance System</title>
-<style>
-  body { font-family: Arial, sans-serif; margin: 20px; }
-  nav button { margin: 5px; padding: 10px 16px; font-size: 16px; border-radius: 8px; }
-  .tab { display: none; margin-top: 20px; }
-  .active { display: block; }
-  canvas { margin-top: 10px; }
-  table { margin-top: 10px; border-collapse: collapse; width: 100%; }
-  th, td { padding: 8px 12px; border: 1px solid #ccc; text-align: center; }
-  th { cursor: pointer; background: #f0f0f0; }
-  .low { background-color: #ffcccc; }    /* <75% */
-  .high { background-color: #ccffcc; }   /* >90% */
-  .btn-big { padding: 14px 20px; font-size: 18px; border-radius: 10px; }
-  .summary { margin-top: 15px; padding: 10px; border: 1px solid #ccc; border-radius: 6px; background: #f9f9f9; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QR Attendance System</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    nav button { margin: 5px; padding: 10px 16px; font-size: 16px; border-radius: 8px; }
+    .tab { display: none; margin-top: 20px; }
+    .active { display: block; }
+    canvas { margin-top: 10px; }
+    table { margin-top: 10px; border-collapse: collapse; width: 100%; }
+    th, td { padding: 8px 12px; border: 1px solid #ccc; text-align: center; }
+    th { cursor: pointer; background: #f0f0f0; }
+    .low { background-color: #ffcccc; }
+    .high { background-color: #ccffcc; }
+    .btn-big { padding: 14px 20px; font-size: 18px; border-radius: 10px; }
+    .summary { margin-top: 15px; padding: 10px; border: 1px solid #ccc; border-radius: 6px; background: #f9f9f9; }
+  </style>
 </head>
 <body>
 
@@ -74,6 +74,9 @@
 <!-- Reports -->
 <div id="reports" class="tab">
   <h2>Monthly Attendance Report</h2>
+  <label>Working Days This Month:
+    <input type="number" id="workingDaysInput" min="1" max="31" style="width:80px">
+  </label>
   <button id="genReport">Generate Report</button>
 
   <h3>Student-wise Report</h3>
@@ -109,303 +112,284 @@
 <script src="https://unpkg.com/@zxing/library@latest"></script>
 
 <script>
-// ---------- Storage ----------
-function loadStudents(){ return JSON.parse(localStorage.getItem('students')||'[]'); }
-function saveStudents(data){ localStorage.setItem('students',JSON.stringify(data)); }
-function loadAttendance(){ return JSON.parse(localStorage.getItem('attendance')||'[]'); }
-function saveAttendance(data){ localStorage.setItem('attendance',JSON.stringify(data)); }
+// Storage
+function loadStudents() { return JSON.parse(localStorage.getItem('students') || '[]'); }
+function saveStudents(data) { localStorage.setItem('students', JSON.stringify(data)); }
+function loadAttendance() { return JSON.parse(localStorage.getItem('attendance') || '[]'); }
+function saveAttendance(data) { localStorage.setItem('attendance', JSON.stringify(data)); }
 
-// ---------- Tabs ----------
-document.querySelectorAll('nav button').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+// Tabs
+document.querySelectorAll('nav button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.getElementById(btn.dataset.tab).classList.add('active');
-    if(btn.dataset.tab==='students') renderStudents();
-    if(btn.dataset.tab==='attendance') renderAttendance();
-    if(btn.dataset.tab==='scan') stopScan();
+    if (btn.dataset.tab === 'students') renderStudents();
+    if (btn.dataset.tab === 'attendance') renderAttendance();
+    if (btn.dataset.tab === 'scan') stopScan();
   });
 });
-document.querySelector('nav button').click(); // default
+document.querySelector('nav button').click(); // default tab
 
-// ---------- Generate QR ----------
-const genBtn=document.getElementById('genBtn');
-const qrCanvas=document.getElementById('qrCanvas');
-const downloadBtn=document.getElementById('downloadBtn');
-const status=document.getElementById('genStatus');
-genBtn.addEventListener('click', ()=>{
-  const roll=document.getElementById('genRoll').value.trim();
-  let name=document.getElementById('genName').value.trim();
-  let cls=document.getElementById('genClass').value.trim();
-  if(!roll){ alert('Enter roll'); return; }
+// Generate QR
+document.getElementById('genBtn').addEventListener('click', () => {
+  const roll = document.getElementById('genRoll').value.trim();
+  let name = document.getElementById('genName').value.trim();
+  let cls = document.getElementById('genClass').value.trim();
+  const status = document.getElementById('genStatus');
+  const downloadBtn = document.getElementById('downloadBtn');
 
-  const stuList=loadStudents();
-  const exists=stuList.find(s=>s.roll===roll);
-  if(exists){
-    status.innerHTML=`<small style="color:red">❌ QR already exists for: ${roll}</small>`;
+  if (!roll) return alert('Enter roll number');
+
+  const stuList = loadStudents();
+  if (stuList.find(s => s.roll === roll)) {
+    status.innerHTML = `<small style="color:red">❌ QR already exists for: ${roll}</small>`;
     return;
   }
-  if(!name) name="Unknown";
-  if(!cls) cls="N/A";
+
+  if (!name) name = "Unknown";
+  if (!cls) cls = "N/A";
 
   stuList.push({ roll, name, class: cls });
   saveStudents(stuList);
 
-  const payload=`${roll}|${name}|${cls}`;
+  const payload = `${roll}|${name}|${cls}`;
   new QRious({ element: qrCanvas, value: payload, size: 300 });
-  const dataUrl=qrCanvas.toDataURL('image/png');
-  downloadBtn.href=dataUrl;
-  downloadBtn.download=`qr_${roll}.png`;
-  downloadBtn.style.display='inline-block';
-  status.innerHTML=`<small style="color:green">✔ QR generated</small>`;
+
+  downloadBtn.href = qrCanvas.toDataURL('image/png');
+  downloadBtn.download = `qr_${roll}.png`;
+  downloadBtn.style.display = 'inline-block';
+  status.innerHTML = `<small style="color:green">✔ QR generated</small>`;
 });
 
-// ---------- Scanner ----------
-let codeReader=null, activeStream=null, lastScanned="";
-async function startScan(){
-  if(!codeReader) codeReader=new ZXing.BrowserQRCodeReader();
-  const preview=document.getElementById('preview');
-  const cameraSelect=document.getElementById('cameraSelect');
-  const deviceId=cameraSelect.value||undefined;
+// QR Scanner
+let codeReader = null, activeStream = null, lastScanned = "";
+async function startScan() {
+  if (!codeReader) codeReader = new ZXing.BrowserQRCodeReader();
+  const preview = document.getElementById('preview');
+  const cameraSelect = document.getElementById('cameraSelect');
+  const deviceId = cameraSelect.value || undefined;
 
-  if(activeStream) stopScan();
+  if (activeStream) stopScan();
+  document.getElementById('startScan').style.display = "none";
+  document.getElementById('stopScan').style.display = "inline-block";
 
-  document.getElementById('startScan').style.display="none";
-  document.getElementById('stopScan').style.display="inline-block";
-
-  codeReader.decodeFromVideoDevice(deviceId, preview, (result, err)=>{
-    if(result){
-      const payload=result.getText();
-      if(payload!==lastScanned){
-        lastScanned=payload;
-        document.getElementById('scanResult').textContent="Scanned: "+payload;
+  codeReader.decodeFromVideoDevice(deviceId, preview, (result, err) => {
+    if (result) {
+      const payload = result.getText();
+      if (payload !== lastScanned) {
+        lastScanned = payload;
+        document.getElementById('scanResult').textContent = "Scanned: " + payload;
         handleScan(payload);
-        setTimeout(()=>{ lastScanned=""; },2000);
+        setTimeout(() => { lastScanned = ""; }, 2000);
       }
     }
-  }).then(stream=>{ activeStream=stream; });
+  }).then(stream => { activeStream = stream; });
 }
-function stopScan(){
-  if(activeStream){ activeStream.getTracks().forEach(t=>t.stop()); activeStream=null; }
-  if(codeReader) codeReader.reset();
-  document.getElementById('startScan').style.display="inline-block";
-  document.getElementById('stopScan').style.display="none";
+function stopScan() {
+  if (activeStream) activeStream.getTracks().forEach(t => t.stop());
+  if (codeReader) codeReader.reset();
+  document.getElementById('startScan').style.display = "inline-block";
+  document.getElementById('stopScan').style.display = "none";
 }
-document.getElementById('startScan').addEventListener('click',startScan);
-document.getElementById('stopScan').addEventListener('click',stopScan);
+document.getElementById('startScan').addEventListener('click', startScan);
+document.getElementById('stopScan').addEventListener('click', stopScan);
 
-// Camera List
-ZXing.BrowserQRCodeReader.listVideoInputDevices().then(devices=>{
-  const sel=document.getElementById('cameraSelect');
-  devices.forEach(d=>{
-    const opt=document.createElement('option');
-    opt.value=d.deviceId;
-    opt.textContent=d.label||`Camera ${sel.length+1}`;
+// Populate cameras
+ZXing.BrowserQRCodeReader.listVideoInputDevices().then(devices => {
+  const sel = document.getElementById('cameraSelect');
+  devices.forEach(d => {
+    const opt = document.createElement('option');
+    opt.value = d.deviceId;
+    opt.textContent = d.label || `Camera ${sel.length + 1}`;
     sel.appendChild(opt);
   });
-  if(devices.length>1){
-    sel.value=devices[devices.length-1].deviceId;
-  }
 });
 
-// ---------- Attendance Handling ----------
-function handleScan(payload){
-  let roll=payload,name='',cls='';
-  if(payload.includes('|')) [roll,name,cls]=payload.split('|');
-  roll=roll.trim(); name=(name||'Unknown').trim(); cls=(cls||'N/A').trim();
+// Scan handling
+function handleScan(payload) {
+  let roll = payload, name = '', cls = '';
+  if (payload.includes('|')) [roll, name, cls] = payload.split('|');
+  roll = roll.trim(); name = name.trim(); cls = cls.trim();
 
-  const recs=loadAttendance();
-  const today=new Date().toISOString().slice(0,10);
-  if(recs.find(r=>r.roll===roll && r.date===today)){
-    showSummary(roll,name,cls,false);
+  const recs = loadAttendance();
+  const today = new Date().toISOString().slice(0, 10);
+  if (recs.find(r => r.roll === roll && r.date === today)) {
+    showSummary(roll, name, cls, false);
     return;
   }
-  recs.unshift({ roll,name,class:cls,ts:Date.now(),date:today });
+
+  recs.unshift({ roll, name, class: cls, ts: Date.now(), date: today });
   saveAttendance(recs);
-  showSummary(roll,name,cls,true);
+  showSummary(roll, name, cls, true);
+}
+function showSummary(roll, name, cls, marked) {
+  const { studentRows } = calculateMonthlyReport();
+  const monthKey = new Date().toISOString().slice(0, 7);
+  const stu = studentRows.find(r => r.roll === roll && r.month === monthKey);
+
+  let msg = `<b>${roll} — ${name} (${cls})</b><br>`;
+  msg += marked ? "✅ Marked today<br>" : "❌ Already marked today<br>";
+  if (stu) msg += `Attendance: ${stu.attended}/${stu.totalDays} (${stu.perc}%)`;
+
+  const box = document.getElementById('scanSummary');
+  box.innerHTML = msg;
+  box.style.display = "block";
 }
 
-function showSummary(roll,name,cls,marked){
-  const { studentRows }=calculateMonthlyReport();
-  const monthKey=new Date().toISOString().slice(0,7);
-  const stu=studentRows.find(r=>r.roll===roll && r.month===monthKey);
-
-  let msg=`<b>${roll} — ${name} (${cls})</b><br>`;
-  msg+=marked? "✅ Marked today<br>":"❌ Already marked today<br>";
-  if(stu){
-    msg+=`Attendance: ${stu.attended}/${stu.totalDays} (${stu.perc}%)`;
-  }
-  const box=document.getElementById('scanSummary');
-  box.innerHTML=msg;
-  box.style.display="block";
-}
-
-// ---------- Render Students ----------
-function renderStudents(){
-  const ul=document.getElementById('stuList');
-  ul.innerHTML='';
-  loadStudents().forEach(s=>{
-    const li=document.createElement('li');
-    li.textContent=`${s.roll} — ${s.name} — Class: ${s.class}`;
+// Students
+function renderStudents() {
+  const ul = document.getElementById('stuList');
+  ul.innerHTML = '';
+  loadStudents().forEach(s => {
+    const li = document.createElement('li');
+    li.textContent = `${s.roll} — ${s.name} — Class: ${s.class}`;
     ul.appendChild(li);
   });
 }
 
-// ---------- Render Attendance ----------
-function renderAttendance(){
-  const ul=document.getElementById('attList');
-  ul.innerHTML='';
-  loadAttendance().forEach(r=>{
-    const li=document.createElement('li');
-    const time=new Date(r.ts).toLocaleTimeString();
-    li.textContent=`${r.date} ${time} — ${r.roll} — ${r.name} — Class: ${r.class}`;
+// Attendance
+function renderAttendance() {
+  const ul = document.getElementById('attList');
+  ul.innerHTML = '';
+  loadAttendance().forEach(r => {
+    const li = document.createElement('li');
+    const time = new Date(r.ts).toLocaleTimeString();
+    li.textContent = `${r.date} ${time} — ${r.roll} — ${r.name} — Class: ${r.class}`;
     ul.appendChild(li);
   });
 }
 
-// ---------- CSV Export/Import ----------
-function downloadCSV(data,filename){
-  const blob=new Blob([data],{type:'text/csv'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a'); a.href=url; a.download=filename; a.click();
+// CSV import/export
+function downloadCSV(data, filename) {
+  const blob = new Blob([data], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
   URL.revokeObjectURL(url);
 }
-document.getElementById('exportStudents').addEventListener('click',()=>{
-  const stu=loadStudents();
-  let csv="roll,name,class\n";
-  stu.forEach(s=>csv+=`${s.roll},${s.name},${s.class}\n`);
-  downloadCSV(csv,"students.csv");
+document.getElementById('exportStudents').addEventListener('click', () => {
+  const stu = loadStudents();
+  let csv = "roll,name,class\n";
+  stu.forEach(s => csv += `${s.roll},${s.name},${s.class}\n`);
+  downloadCSV(csv, "students.csv");
 });
-document.getElementById('exportRawAttendance').addEventListener('click',()=>{
-  const recs=loadAttendance();
-  let csv="roll,name,class,timestamp,date\n";
-  recs.forEach(r=>csv+=`${r.roll},${r.name},${r.class},${r.ts},${r.date}\n`);
-  downloadCSV(csv,"attendance_raw.csv");
+document.getElementById('exportRawAttendance').addEventListener('click', () => {
+  const recs = loadAttendance();
+  let csv = "roll,name,class,timestamp,date\n";
+  recs.forEach(r => csv += `${r.roll},${r.name},${r.class},${r.ts},${r.date}\n`);
+  downloadCSV(csv, "attendance_raw.csv");
 });
-document.getElementById('exportStudentReport').addEventListener('click',()=>{
-  const { studentRows }=calculateMonthlyReport();
-  let csv="roll,name,class,month,attended,totalDays,percentage\n";
-  studentRows.forEach(r=>csv+=`${r.roll},${r.name},${r.class},${r.month},${r.attended},${r.totalDays},${r.perc}%\n`);
-  downloadCSV(csv,"student_report.csv");
+document.getElementById('exportStudentReport').addEventListener('click', () => {
+  const { studentRows } = calculateMonthlyReport();
+  let csv = "roll,name,class,month,attended,totalDays,percentage\n";
+  studentRows.forEach(r => csv += `${r.roll},${r.name},${r.class},${r.month},${r.attended},${r.totalDays},${r.perc}%\n`);
+  downloadCSV(csv, "student_report.csv");
 });
-document.getElementById('exportClassReport').addEventListener('click',()=>{
-  const { classRows }=calculateMonthlyReport();
-  let csv="class,month,totalStudents,totalDays,totalAttendance,percentage\n";
-  classRows.forEach(c=>csv+=`${c.class},${c.month},${c.totalStudents},${c.totalDays},${c.totalAttendance},${c.perc}%\n`);
-  downloadCSV(csv,"class_report.csv");
+document.getElementById('exportClassReport').addEventListener('click', () => {
+  const { classRows } = calculateMonthlyReport();
+  let csv = "class,month,totalStudents,totalDays,totalAttendance,percentage\n";
+  classRows.forEach(c => csv += `${c.class},${c.month},${c.totalStudents},${c.totalDays},${c.totalAttendance},${c.perc}%\n`);
+  downloadCSV(csv, "class_report.csv");
 });
-document.getElementById('importCSV').addEventListener('change', e=>{
-  const file=e.target.files[0]; if(!file) return;
-  const reader=new FileReader();
-  reader.onload=ev=>importCSV(ev.target.result);
+document.getElementById('importCSV').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => importCSV(ev.target.result);
   reader.readAsText(file);
 });
-function importCSV(text){
-  const lines=(text||'').trim().split(/\r?\n/);
-  const stu=loadStudents();
-  lines.forEach(line=>{
-    const [rollRaw,nameRaw,classRaw]=line.split(',');
-    const roll=(rollRaw||'').trim();
-    const name=(nameRaw||'').trim();
-    const cls=(classRaw||'N/A').trim();
-    if(roll && name && !stu.find(s=>s.roll===roll)){
-      stu.push({ roll,name,class:cls });
+function importCSV(text) {
+  const lines = text.trim().split(/\r?\n/);
+  const stu = loadStudents();
+  lines.forEach(line => {
+    const [rollRaw, nameRaw, classRaw] = line.split(',');
+    const roll = (rollRaw || '').trim();
+    const name = (nameRaw || '').trim();
+    const cls = (classRaw || 'N/A').trim();
+    if (roll && name && !stu.find(s => s.roll === roll)) {
+      stu.push({ roll, name, class: cls });
     }
   });
   saveStudents(stu);
   renderStudents();
 }
 
-// ---------- Reports ----------
-function calculateMonthlyReport(){
-  const recs=loadAttendance();
-  const studentReport={}, classReport={};
+// Monthly Report
+function calculateMonthlyReport(userWorkingDays = null) {
+  const recs = loadAttendance();
+  const studentReport = {}, classReport = {}, classStudentMap = {}, attendanceDaysByClassMonth = {};
 
-  recs.forEach(r=>{
-    const d=new Date(r.date);
-    const monthKey=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-    const stuKey=`${r.roll}|${monthKey}`;
-    if(!studentReport[stuKey]){
-      studentReport[stuKey]={ roll:r.roll,name:r.name,class:r.class,month:monthKey,days:new Set() };
-    }
+  recs.forEach(r => {
+    const monthKey = r.date.slice(0, 7);
+    const stuKey = `${r.roll}|${monthKey}`;
+    const classKey = `${r.class}|${monthKey}`;
+
+    if (!studentReport[stuKey]) studentReport[stuKey] = { roll: r.roll, name: r.name, class: r.class, month: monthKey, days: new Set() };
     studentReport[stuKey].days.add(r.date);
+
+    if (!attendanceDaysByClassMonth[classKey]) attendanceDaysByClassMonth[classKey] = new Set();
+    attendanceDaysByClassMonth[classKey].add(r.date);
+
+    if (!classStudentMap[classKey]) classStudentMap[classKey] = new Set();
+    classStudentMap[classKey].add(r.roll);
   });
 
-  const studentRows=[];
-  for(const k in studentReport){
-    const r=studentReport[k];
-    const [year,mon]=r.month.split('-').map(Number);
-    const totalDays=new Date(year, mon, 0).getDate();
-    const attended=r.days.size;
-    const perc=parseFloat(((attended/totalDays)*100).toFixed(1));
-    studentRows.push({ roll:r.roll,name:r.name,class:r.class,month:r.month,attended,totalDays,perc });
-
-    const classKey=`${r.class}|${r.month}`;
-    if(!classReport[classKey]){
-      classReport[classKey]={ class:r.class,month:r.month,totalDays,totalStudents:0,totalAttendance:0 };
-    }
-    classReport[classKey].totalStudents++;
-    classReport[classKey].totalAttendance+=attended;
+  const studentRows = [];
+  for (const k in studentReport) {
+    const r = studentReport[k];
+    const classKey = `${r.class}|${r.month}`;
+    const totalDays = userWorkingDays ?? attendanceDaysByClassMonth[classKey]?.size || 0;
+    const attended = r.days.size;
+    const perc = totalDays === 0 ? 0 : parseFloat(((attended / totalDays) * 100).toFixed(1));
+    studentRows.push({ roll: r.roll, name: r.name, class: r.class, month: r.month, attended, totalDays, perc });
   }
 
-  const classRows=[];
-  for(const k in classReport){
-    const c=classReport[k];
-    const possible=c.totalStudents*c.totalDays;
-    const perc=parseFloat(((c.totalAttendance/possible)*100).toFixed(1));
-    classRows.push({ ...c, perc });
+  const classRows = [];
+  for (const k in classStudentMap) {
+    const [cls, month] = k.split('|');
+    const totalDays = userWorkingDays ?? attendanceDaysByClassMonth[k]?.size || 0;
+    const totalStudents = classStudentMap[k].size;
+    const totalAttendance = studentRows.filter(r => r.class === cls && r.month === month).reduce((sum, r) => sum + r.attended, 0);
+    const possible = totalStudents * totalDays;
+    const perc = possible === 0 ? 0 : parseFloat(((totalAttendance / possible) * 100).toFixed(1));
+    classRows.push({ class: cls, month, totalStudents, totalDays, totalAttendance, perc });
   }
 
   return { studentRows, classRows };
 }
 
-document.getElementById('genReport').addEventListener('click',()=>{
-  const { studentRows,classRows }=calculateMonthlyReport();
-  const tbody=document.querySelector('#reportTable tbody');
-  tbody.innerHTML='';
-  studentRows.forEach(r=>{
-    const tr=document.createElement('tr');
-    let cls="";
-    if(r.perc<75) cls="low";
-    else if(r.perc>90) cls="high";
-    tr.className=cls;
-    tr.innerHTML=`<td>${r.roll}</td><td>${r.name}</td><td>${r.class}</td>
-                  <td>${r.month}</td><td>${r.attended}</td>
-                  <td>${r.totalDays}</td><td>${r.perc}%</td>`;
+document.getElementById('genReport').addEventListener('click', () => {
+  const workingDays = parseInt(document.getElementById('workingDaysInput').value);
+  if (isNaN(workingDays) || workingDays <= 0) {
+    alert("Please enter the number of working days for this month.");
+    return;
+  }
+
+  const { studentRows, classRows } = calculateMonthlyReport(workingDays);
+
+  const tbody = document.querySelector('#reportTable tbody');
+  tbody.innerHTML = '';
+  studentRows.forEach(r => {
+    const tr = document.createElement('tr');
+    let cls = '';
+    if (r.perc < 75) cls = 'low';
+    else if (r.perc > 90) cls = 'high';
+    tr.className = cls;
+    tr.innerHTML = `<td>${r.roll}</td><td>${r.name}</td><td>${r.class}</td>
+                    <td>${r.month}</td><td>${r.attended}</td><td>${r.totalDays}</td><td>${r.perc}%</td>`;
     tbody.appendChild(tr);
   });
 
-  const cbody=document.querySelector('#classReportTable tbody');
-  cbody.innerHTML='';
-  classRows.forEach(c=>{
-    const tr=document.createElement('tr');
-    let cls="";
-    if(c.perc<75) cls="low";
-    else if(c.perc>90) cls="high";
-    tr.className=cls;
-    tr.innerHTML=`<td>${c.class}</td><td>${c.month}</td><td>${c.totalStudents}</td>
-                  <td>${c.totalDays}</td><td>${c.totalAttendance}</td><td>${c.perc}%</td>`;
+  const cbody = document.querySelector('#classReportTable tbody');
+  cbody.innerHTML = '';
+  classRows.forEach(c => {
+    const tr = document.createElement('tr');
+    let cls = '';
+    if (c.perc < 75) cls = 'low';
+    else if (c.perc > 90) cls = 'high';
+    tr.className = cls;
+    tr.innerHTML = `<td>${c.class}</td><td>${c.month}</td><td>${c.totalStudents}</td>
+                    <td>${c.totalDays}</td><td>${c.totalAttendance}</td><td>${c.perc}%</td>`;
     cbody.appendChild(tr);
-  });
-});
-
-// ---------- Sorting ----------
-function sortTable(tableId,colIndex,numeric=false){
-  const table=document.getElementById(tableId);
-  const rows=[...table.tBodies[0].rows];
-  const sorted=rows.sort((a,b)=>{
-    const A=a.cells[colIndex].innerText.replace('%','');
-    const B=b.cells[colIndex].innerText.replace('%','');
-    return numeric? (parseFloat(A)-parseFloat(B)) : A.localeCompare(B);
-  });
-  table.tBodies[0].innerHTML='';
-  sorted.forEach(r=>table.tBodies[0].appendChild(r));
-}
-document.querySelectorAll('th[data-sort]').forEach(th=>{
-  th.addEventListener('click',()=>{
-    const tableId=th.closest('table').id;
-    const index=th.cellIndex;
-    const isNum=th.dataset.sort==='perc' || th.dataset.sort==='attended';
-    sortTable(tableId,index,isNum);
   });
 });
 </script>
