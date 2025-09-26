@@ -4,10 +4,7 @@
 <meta charset="UTF-8">
 <title>QR Attendance System</title>
 <style>
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  margin: 0; padding: 0; background: #f4f6f8; color: #333;
-}
+body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin:0; padding:0; background:#f4f6f8; color:#333; }
 h1,h2,h3{text-align:center;color:#222;}
 h1{margin-top:20px;font-size:2rem;}
 h2{margin-top:10px;font-size:1.5rem;}
@@ -18,7 +15,7 @@ nav button:hover{background:#0056b3;transform:translateY(-2px);}
 .tab{display:none;max-width:900px;margin:0 auto 40px;padding:20px;background:#fff;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.1);}
 .active{display:block;}
 label{display:block;margin:10px 0 5px;font-weight:600;}
-input[type="text"],input[type="file"]{width:100%;max-width:300px;padding:8px 10px;border-radius:6px;border:1px solid #ccc;margin-bottom:10px;}
+input[type="text"], input[type="number"], input[type="file"]{width:100%; max-width:300px; padding:8px 10px; border-radius:6px; border:1px solid #ccc; margin-bottom:10px;}
 #qrCanvas{display:block;margin:15px auto;border:2px solid #007bff;border-radius:8px;}
 #downloadBtn{display:inline-block;margin:10px auto;padding:8px 12px;background:#28a745;color:#fff;border-radius:6px;text-decoration:none;font-weight:600;transition:background 0.3s;}
 #downloadBtn:hover{background:#218838;}
@@ -36,11 +33,12 @@ tbody tr:nth-child(even){background:#f8f9fa;}
 tbody tr:hover{background:#d1ecf1;cursor:pointer;}
 button[id^="export"],#genReport{display:inline-block;margin:5px;padding:8px 14px;border:none;border-radius:6px;background:#17a2b8;color:#fff;font-weight:600;transition:background 0.3s;}
 button[id^="export"]:hover,#genReport:hover{background:#138496;}
-@media(max-width:600px){nav{flex-direction:column;align-items:center;}input[type="text"],input[type="file"],button[id^="export"],#genReport{width:90%;max-width:300px;}table,canvas{width:90%;}}
+@media(max-width:600px){nav{flex-direction:column;align-items:center;}input[type="text"],input[type="number"],input[type="file"],button[id^="export"],#genReport{width:90%;max-width:300px;}table,canvas{width:90%;}}
 </style>
 </head>
 <body>
 <h1>QR Attendance System</h1>
+
 <nav>
   <button data-tab="gen">Generate QR</button>
   <button data-tab="scan">Scan QR</button>
@@ -94,6 +92,7 @@ button[id^="export"]:hover,#genReport:hover{background:#138496;}
 <!-- Reports -->
 <div id="reports" class="tab">
 <h2>Monthly Attendance Report</h2>
+<label>Enter Working Days for Percentage Calculation: <input type="number" id="workingDays" placeholder="e.g. 22"></label>
 <button id="genReport">Generate Report</button>
 
 <h3>Student-wise Report</h3>
@@ -201,23 +200,24 @@ document.getElementById('stopScan').addEventListener('click',()=>{
 // ---------- Handle Scan + Voice ----------
 function handleScan(payload){
   let roll='',name='Unknown',cls='N/A';
-  if(payload.startsWith('ATT|')){
-    [,,roll,name,cls]=payload.split('|').map(p=>p.trim());
-  } else { [roll,name,cls]=payload.split('|').map(p=>p.trim()); }
+  if(payload.startsWith('ATT|')){ [,,roll,name,cls]=payload.split('|').map(p=>p.trim()); } 
+  else { [roll,name,cls]=payload.split('|').map(p=>p.trim()); }
 
   const recs=loadAttendance();
   const today=new Date().toISOString().slice(0,10);
   if(recs.find(r=>r.roll===roll && r.date===today)){
-    document.getElementById('scanResult').textContent=`❌ Already marked today: ${roll} — ${name}`;
+    const msg=`Attendance already marked for ${name}, roll number ${roll}`;
+    document.getElementById('scanResult').textContent='❌ '+msg;
+    speak(msg);
     showStudentHistory(roll);
     return;
   }
 
   recs.unshift({roll,name,class:cls,ts:Date.now(),date:today});
   saveAttendance(recs);
-
-  document.getElementById('scanResult').textContent=`✅ Attendance marked for ${roll} — ${name}`;
-  speak(`Attendance marked for ${name}, roll number ${roll}`);
+  const msg=`Attendance marked for ${name}, roll number ${roll}`;
+  document.getElementById('scanResult').textContent='✅ '+msg;
+  speak(msg);
   showStudentHistory(roll);
 }
 
@@ -259,83 +259,54 @@ function renderAttendance(){
 
 // ---------- CSV Export/Import ----------
 function downloadCSV(data,filename){ const blob=new Blob([data],{type:'text/csv'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url;a.download=filename;a.click(); URL.revokeObjectURL(url); }
-
 document.getElementById('exportStudents').addEventListener('click',()=>{
   const stu=loadStudents();
-  let csv="roll,name,class\n"; stu.forEach(s=>{csv+=`${s.roll},${s.name},${s.class}\n`;});
-  downloadCSV(csv,"students.csv");
+  let csv="roll,name,class\n"; stu.forEach(s=>{csv+=`${s.roll},${s.name},${s.class}\n`;}); downloadCSV(csv,"students.csv");
 });
-
 document.getElementById('exportRawAttendance').addEventListener('click',()=>{
-  const recs=loadAttendance();
-  let csv="roll,name,class,timestamp,date\n";
-  recs.forEach(r=>{csv+=`${r.roll},${r.name},${r.class},${r.ts},${r.date}\n`;});
-  downloadCSV(csv,"attendance_raw.csv");
+  const recs=loadAttendance(); let csv="roll,name,class,timestamp,date\n";
+  recs.forEach(r=>{csv+=`${r.roll},${r.name},${r.class},${r.ts},${r.date}\n`;}); downloadCSV(csv,"attendance_raw.csv");
 });
-
-document.getElementById('exportStudentReport').addEventListener('click',()=>{
-  const {studentRows}=calculateMonthlyReport();
-  let csv="roll,name,class,month,attended,totalDays,percentage\n";
-  studentRows.forEach(r=>{csv+=`${r.roll},${r.name},${r.class},${r.month},${r.attended},${r.totalDays},${r.perc}%\n`;});
-  downloadCSV(csv,"student_report.csv");
-});
-
-document.getElementById('exportClassReport').addEventListener('click',()=>{
-  const {classRows}=calculateMonthlyReport();
-  let csv="class,month,totalStudents,totalDays,totalAttendance,percentage\n";
-  classRows.forEach(c=>{csv+=`${c.class},${c.month},${c.totalStudents},${c.totalDays},${c.totalAttendance},${c.perc}%\n`;});
-  downloadCSV(csv,"class_report.csv");
-});
-
 document.getElementById('importCSV').addEventListener('change',e=>{
   const file=e.target.files[0]; if(!file) return;
-  const reader=new FileReader();
-  reader.onload=ev=>importCSV(ev.target.result);
-  reader.readAsText(file);
+  const reader=new FileReader(); reader.onload=ev=>importCSV(ev.target.result); reader.readAsText(file);
 });
 function importCSV(text){
-  const lines=(text||'').trim().split(/\r?\n/);
-  const stu=loadStudents();
+  const lines=(text||'').trim().split(/\r?\n/); const stu=loadStudents();
   lines.forEach(line=>{
     const [rollRaw,nameRaw,classRaw]=line.split(',');
-    const roll=(rollRaw||'').trim();
-    const name=(nameRaw||'').trim();
-    const cls=(classRaw||'N/A').trim();
-    if(roll && name && !stu.find(s=>s.roll===roll)){ stu.push({roll,name,class:cls}); }
-  });
-  saveStudents(stu); renderStudents();
+    const roll=(rollRaw||'').trim(); const name=(nameRaw||'').trim(); const cls=(classRaw||'N/A').trim();
+    if(roll && name && !stu.find(s=>s.roll===roll)) stu.push({roll,name,class:cls});
+  }); saveStudents(stu); renderStudents();
 }
 
 // ---------- Reports ----------
-function calculateMonthlyReport(){
+function calculateReport(){
   const recs=loadAttendance();
+  const workingDays=parseInt(document.getElementById('workingDays').value)||0;
   const studentReport={},classReport={};
   recs.forEach(r=>{
-    const d=new Date(r.date);
-    const monthKey=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    const d=new Date(r.date); const monthKey=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
     const stuKey=`${r.roll}|${monthKey}`;
-    if(!studentReport[stuKey]){ studentReport[stuKey]={roll:r.roll,name:r.name,class:r.class,month:monthKey,days:new Set()}; }
+    if(!studentReport[stuKey]) studentReport[stuKey]={roll:r.roll,name:r.name,class:r.class,month:monthKey,days:new Set()};
     studentReport[stuKey].days.add(r.date);
   });
   const studentRows=[];
   for(const k in studentReport){
     const r=studentReport[k];
-    const [year,mon]=r.month.split('-').map(Number);
-    const totalDays=new Date(year,mon,0).getDate();
+    const totalDays=workingDays>0? workingDays : new Date(...r.month.split('-').map(Number),0).getDate();
     const attended=r.days.size;
     const perc=((attended/totalDays)*100).toFixed(1);
     studentRows.push({roll:r.roll,name:r.name,class:r.class,month:r.month,attended,totalDays,perc});
   }
   studentRows.forEach(r=>{
     const key=`${r.class}|${r.month}`;
-    if(!classReport[key]){ classReport[key]={class:r.class,month:r.month,totalStudents:0,totalDays:r.totalDays,totalAttendance:0}; }
-    classReport[key].totalStudents+=1;
-    classReport[key].totalAttendance+=r.attended;
+    if(!classReport[key]) classReport[key]={class:r.class,month:r.month,totalStudents:0,totalDays:r.totalDays,totalAttendance:0};
+    classReport[key].totalStudents+=1; classReport[key].totalAttendance+=r.attended;
   });
   const classRows=[];
   for(const k in classReport){
-    const c=classReport[k];
-    const maxPossible=c.totalStudents*c.totalDays;
+    const c=classReport[k]; const maxPossible=c.totalStudents*c.totalDays;
     const perc=((c.totalAttendance/maxPossible)*100).toFixed(1);
     classRows.push({class:c.class,month:c.month,totalStudents:c.totalStudents,totalDays:c.totalDays,totalAttendance:c.totalAttendance,perc});
   }
@@ -343,7 +314,7 @@ function calculateMonthlyReport(){
 }
 
 document.getElementById('genReport').addEventListener('click',()=>{
-  const {studentRows,classRows}=calculateMonthlyReport();
+  const {studentRows,classRows}=calculateReport();
   const tbody=document.querySelector('#reportTable tbody'); tbody.innerHTML='';
   studentRows.forEach(r=>{
     const tr=document.createElement('tr');
@@ -356,6 +327,18 @@ document.getElementById('genReport').addEventListener('click',()=>{
     tr.innerHTML=`<td>${c.class}</td><td>${c.month}</td><td>${c.totalStudents}</td><td>${c.totalDays}</td><td>${c.totalAttendance}</td><td>${c.perc}%</td>`;
     tbody2.appendChild(tr);
   });
+});
+
+// ---------- Export Reports CSV ----------
+document.getElementById('exportStudentReport').addEventListener('click',()=>{
+  const {studentRows}=calculateReport(); let csv="roll,name,class,month,attended,totalDays,percentage\n";
+  studentRows.forEach(r=>{csv+=`${r.roll},${r.name},${r.class},${r.month},${r.attended},${r.totalDays},${r.perc}%\n`;});
+  downloadCSV(csv,"student_report.csv");
+});
+document.getElementById('exportClassReport').addEventListener('click',()=>{
+  const {classRows}=calculateReport(); let csv="class,month,totalStudents,totalDays,totalAttendance,percentage\n";
+  classRows.forEach(c=>{csv+=`${c.class},${c.month},${c.totalStudents},${c.totalDays},${c.totalAttendance},${c.perc}%\n`;});
+  downloadCSV(csv,"class_report.csv");
 });
 </script>
 </body>
