@@ -93,10 +93,7 @@ nav button.active-nav {
     box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.2);
     transform: translateY(0);
 }
-[data-tab="gen"] { 
-    background: #004c99;
-    box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.2);
-}
+/* REMOVED: [data-tab="gen"] CSS since we use the .active-nav class now */
 
 /* --- Tab Content: The Main Card Container --- */
 .tab {
@@ -405,15 +402,14 @@ tr:last-child td {
 <h1>Facial Recognition Attendance System (IndexedDB)</h1>
 
 <nav>
-    <button data-tab="gen">Register Face</button>
-    <button data-tab="scan">Scan Face</button>
+    <button data-tab="gen" class="active-nav">Register Face</button> <button data-tab="scan">Scan Face</button>
     <button data-tab="manual">Manual Attendance</button>
     <button data-tab="students">Students</button>
     <button data-tab="attendance">Attendance</button>
     <button data-tab="reports">Reports</button>
 </nav>
 
-<div id="gen" class="tab">
+<div id="gen" class="tab active">
 <h2>Register Student Face</h2>
 <label for="genRoll">Roll:</label> 
 <input id="genRoll" type="text" placeholder="Student Roll Number"><br>
@@ -611,6 +607,7 @@ const scanResultDiv = document.getElementById('scanResult');
 const preview = document.getElementById('preview');
 const overlayCanvas = document.getElementById('overlay');
 let recognitionInterval = null;
+let activeStream = null;
 let lastScannedRoll = "";
 const detectionOptions = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 });
 const recognitionThreshold = 0.6; // Lower value is more strict match
@@ -686,7 +683,7 @@ document.querySelectorAll('nav button').forEach(btn=>{
         }
     });
 });
-document.querySelector('nav button').click(); // default to first tab on load
+// REMOVED: document.querySelector('nav button').click(); // This is no longer strictly necessary due to HTML fix
 
 // ---------- Register Face (Replaces Generate QR) ----------
 const regFaceBtn=document.getElementById('regFaceBtn');
