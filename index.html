@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Facial Recognition Attendance System (IndexedDB)</title>
+
+<script src="https://justadudewhohacks.github.io/face-api.js/dist/face-api.min.js"></script>
+
 <style>
 /* --- CSS Variables for Easy Theming (Kept the same) --- */
 :root {
@@ -499,8 +502,6 @@ tr:last-child td {
 </table>
 </div>
 
-<script src="https://justadudewhohacks.github.io/face-api.js/dist/face-api.min.js"></script>
-
 <script>
 // --- START OF JAVASCRIPT (Facial Recognition / IndexedDB Version) ---
 
@@ -600,8 +601,7 @@ function loadWorkingDays(){ return parseInt(localStorage.getItem('workingDays')|
 openDB().catch(e => console.error("Database initialization failed:", e));
 
 // ---------- Face Recognition Setup ----------
-// FIX: Using the local folder path. YOU MUST HAVE A FOLDER NAMED 'models' 
-// in the same directory as this HTML file, containing the model files.
+// Using the local folder path. YOU MUST HAVE A FOLDER NAMED 'models' 
 const MODEL_URL = './models'; 
 let faceMatcher = null;
 const startScanBtn = document.getElementById('startScan');
@@ -626,6 +626,7 @@ async function loadFaceModels() {
         scanResultDiv.textContent = "Ready to scan.";
         startScanBtn.disabled = false;
     } catch(e) {
+        // If models fail to load, this error message is crucial
         console.error("Failed to load Face-API models. Check if the local 'models' folder exists and contains all required files.", e);
         scanResultDiv.textContent = "❌ Error loading models. Check console and 'models' folder setup.";
         startScanBtn.disabled = true;
