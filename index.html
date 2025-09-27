@@ -381,7 +381,8 @@ tbody tr:nth-child(even) {
 document.addEventListener('DOMContentLoaded', () => {
     // ---------- IndexedDB Setup ----------
     const DB_NAME = 'AttendanceDB';
-    const DB_VERSION = 1;
+    // ** THE FIX IS HERE: Version is now 2 **
+    const DB_VERSION = 2; 
     const STORE_STUDENTS = 'students';
     const STORE_ATTENDANCE = 'attendance';
     let dbPromise;
@@ -410,6 +411,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const store = transaction.objectStore(storeName);
         return new Promise((resolve, reject) => {
             const request = operation(store);
+            if (!request) { // For operations like clear that don't return a request
+                 resolve();
+                 return;
+            }
             request.onsuccess = () => resolve(request.result);
             request.onerror = (e) => reject(e.target.error);
         });
@@ -438,13 +443,18 @@ document.addEventListener('DOMContentLoaded', () => {
             
             document.getElementById(btn.dataset.tab).classList.add('active');
             btn.classList.add('active-nav');
-
-            if (btn.dataset.tab === 'students') await renderStudents();
-            if (btn.dataset.tab === 'attendance') await renderAttendance();
-            if (btn.dataset.tab === 'reports') {
-                document.getElementById('workingDays').value = loadWorkingDays();
-                await populateMonthSelector();
-                await handleGenerateReport();
+            
+            try {
+                if (btn.dataset.tab === 'students') await renderStudents();
+                if (btn.dataset.tab === 'attendance') await renderAttendance();
+                if (btn.dataset.tab === 'reports') {
+                    document.getElementById('workingDays').value = loadWorkingDays();
+                    await populateMonthSelector();
+                    await handleGenerateReport();
+                }
+            } catch (e) {
+                console.error(`Failed to load tab content: ${e}`);
+                alert(`Could not load data. Please ensure the database is working correctly.`);
             }
         });
     });
@@ -660,7 +670,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const existingStudents = await loadStudents();
             let importedCount = 0;
             
-            // ** FIXED ** change 'const' to 'let' for the field variable
             const parseCsvLine = (line) => {
                 const result = [];
                 let field = ''; 
