@@ -51,11 +51,11 @@ button[id^="export"]:hover,#genReport:hover{background:#138496;}
 <!-- Generate QR -->
 <div id="gen" class="tab">
 <h2>Generate QR Code</h2>
-<label>Roll: <input id="genRoll" type="text"></label>
-<label>Name: <input id="genName" type="text"></label>
-<label>Class: <input id="genClass" type="text"></label>
+<label>Roll: <input id="genRoll" type="text"></label><br>
+<label>Name: <input id="genName" type="text"></label><br>
+<label>Class: <input id="genClass" type="text"></label><br>
 <button id="genBtn">Generate</button>
-<canvas id="qrCanvas" width="450" height="450"></canvas>
+<canvas id="qrCanvas" width="450" height="450"></canvas><br>
 <a id="downloadBtn" style="display:none">Download QR</a>
 <div id="genStatus"></div>
 </div>
@@ -63,7 +63,7 @@ button[id^="export"]:hover,#genReport:hover{background:#138496;}
 <!-- Scan QR -->
 <div id="scan" class="tab">
 <h2>Scan QR Code</h2>
-<video id="preview" width="300" height="200" style="border:1px solid #ccc"></video>
+<video id="preview" width="300" height="200" style="border:1px solid #ccc"></video><br>
 <div id="scanControls">
   <button id="startScan">Start Scan</button>
   <button id="stopScan">Stop Scan</button>
@@ -137,8 +137,8 @@ function loadStudents(){ try { return JSON.parse(localStorage.getItem('students'
 function saveStudents(data){ localStorage.setItem('students',JSON.stringify(data)); }
 function loadAttendance(){ try { return JSON.parse(localStorage.getItem('attendance')||'[]'); } catch(e){ return []; } }
 function saveAttendance(data){ localStorage.setItem('attendance',JSON.stringify(data)); }
-function loadWorkingDays(){ return parseInt(localStorage.getItem('workingDays')||'0'); }
 function saveWorkingDays(val){ localStorage.setItem('workingDays',val); }
+function loadWorkingDays(){ return parseInt(localStorage.getItem('workingDays')||'0'); }
 
 // ---------- Tabs ----------
 document.querySelectorAll('nav button').forEach(btn=>{
@@ -175,9 +175,7 @@ genBtn.addEventListener('click',()=>{
   saveStudents(stuList);
 
   const payload=`ATT|${roll}|${name}|${cls}`;
-
-  const ctx = qrCanvas.getContext('2d');
-  ctx.clearRect(0,0,qrCanvas.width,qrCanvas.height);
+  const ctx = qrCanvas.getContext('2d'); ctx.clearRect(0,0,qrCanvas.width,qrCanvas.height);
 
   qr = new QRious({
     element: qrCanvas,
@@ -223,31 +221,30 @@ document.getElementById('stopScan').addEventListener('click',()=>{
 
 // ---------- Handle Scan + Voice ----------
 function handleScan(payload){
-  let roll = '', name = 'Unknown', cls = 'N/A';
-  const parts = (payload||'').split('|').map(p=>p.trim());
+  let roll='', name='Unknown', cls='N/A';
+  const parts=(payload||'').split('|').map(p=>p.trim());
+  if(parts.length>=4 && parts[0].toUpperCase()==='ATT'){ roll=parts[1]; name=parts[2]; cls=parts[3]; }
+  else if(parts.length>=3){ roll=parts[0]; name=parts[1]; cls=parts[2]; }
+  else if(parts.length===2){ roll=parts[0]; name=parts[1]; }
+  else { roll=payload; }
 
-  if(parts.length >= 4 && parts[0].toUpperCase()==='ATT'){
-    roll = parts[1] || '';
-    name = parts[2] || 'Unknown';
-    cls  = parts[3] || 'N/A';
-  } else if(parts.length >= 3){
-    roll = parts[0] || '';
-    name = parts[1] || 'Unknown';
-    cls  = parts[2] || 'N/A';
-  } else if(parts.length === 2){
-    roll = parts[0] || '';
-    name = parts[1] || 'Unknown';
-    cls = 'N/A';
-  } else { roll = payload; name = 'Unknown'; cls = 'N/A'; }
+  roll=roll||''; name=name||'Unknown'; cls=cls||'N/A';
 
-  roll = (roll||'').toString(); name = name || 'Unknown'; cls = cls || 'N/A';
+  const stuList=loadStudents();
+  const studentExists = stuList.find(s=>s.roll===roll);
+  const recs=loadAttendance();
+  const today=new Date().toISOString().slice(0,10);
 
-  const recs = loadAttendance();
-  const today = new Date().toISOString().slice(0,10);
+  if(!studentExists){
+    const msg=`Invalid Roll Number: ${roll}`;
+    document.getElementById('scanResult').textContent='❌ '+msg;
+    speak(msg);
+    return;
+  }
 
   if(recs.find(r=>r.roll===roll && r.date===today)){
-    const msg = `Attendance already marked for ${roll}`;
-    document.getElementById('scanResult').textContent = '❌ ' + msg;
+    const msg=`Attendance already marked for ${name} (Roll: ${roll})`;
+    document.getElementById('scanResult').textContent='❌ '+msg;
     speak(msg);
     showStudentHistory(roll,'scanHistory');
     return;
@@ -255,9 +252,8 @@ function handleScan(payload){
 
   recs.unshift({roll,name,class:cls,ts:Date.now(),date:today});
   saveAttendance(recs);
-
-  const msg = `Attendance marked for ${roll}`;
-  document.getElementById('scanResult').textContent = '✅ ' + msg;
+  const msg=`Attendance marked for ${name} (Roll: ${roll})`;
+  document.getElementById('scanResult').textContent='✅ '+msg+' — Class: '+cls;
   speak(msg);
   showStudentHistory(roll,'scanHistory');
 }
@@ -265,24 +261,41 @@ function handleScan(payload){
 // ---------- Manual Attendance ----------
 document.getElementById('markManual').addEventListener('click',()=>{
   const roll=document.getElementById('manualRoll').value.trim();
-  if(!roll){ alert('Enter roll'); return; }
-  const students=loadStudents();
-  const stu=students.find(s=>s.roll===roll) || {name:'Unknown',class:'N/A'};
+  const stuList=loadStudents();
+  const studentExists = stuList.find(s=>s.roll===roll);
   const recs=loadAttendance();
   const today=new Date().toISOString().slice(0,10);
+
+  if(!roll){
+    document.getElementById('manualResult').textContent='❌ Enter Roll Number';
+    speak('Enter Roll Number');
+    return;
+  }
+  if(!studentExists){
+    const msg=`Invalid Roll Number: ${roll}`;
+    document.getElementById('manualResult').textContent='❌ '+msg;
+    speak(msg);
+    return;
+  }
+
+  const name=studentExists.name;
+  const cls=studentExists.class||'N/A';
+
   if(recs.find(r=>r.roll===roll && r.date===today)){
-    const msg=`Attendance already marked for ${roll}`;
+    const msg=`Attendance already marked for ${name} (Roll: ${roll})`;
     document.getElementById('manualResult').textContent='❌ '+msg;
     speak(msg);
     showStudentHistory(roll,'manualHistory');
     return;
   }
-  recs.unshift({roll, name:stu.name, class:stu.class, ts:Date.now(), date:today});
+
+  recs.unshift({roll,name,class:cls,ts:Date.now(),date:today});
   saveAttendance(recs);
-  const msg=`Attendance marked for ${roll}`;
-  document.getElementById('manualResult').textContent='✅ '+msg;
+  const msg=`Attendance marked for ${name} (Roll: ${roll})`;
+  document.getElementById('manualResult').textContent='✅ '+msg+' — Class: '+cls;
   speak(msg);
   showStudentHistory(roll,'manualHistory');
+  document.getElementById('manualRoll').value='';
 });
 
 // ---------- Voice ----------
@@ -291,20 +304,26 @@ function speak(text){
     if('speechSynthesis' in window){
       window.speechSynthesis.cancel();
       const utter = new SpeechSynthesisUtterance(text);
-      utter.lang = "en-IN";
+      utter.lang="en-IN";
       window.speechSynthesis.speak(utter);
     }
-  }catch(e){ console.error('Speech error', e); }
+  }catch(e){ console.error('Speech error',e); }
 }
 
 // ---------- Show History ----------
 function showStudentHistory(roll,ulId){
-  const recs = loadAttendance().filter(r=>r.roll===roll);
+  const recs=loadAttendance().filter(r=>r.roll===roll);
   const ul=document.getElementById(ulId); ul.innerHTML='';
-  if(recs.length===0){ const li=document.createElement('li'); li.textContent='No attendance records found for this roll.'; ul.appendChild(li); return; }
-  recs.forEach(r=>{
+  if(recs.length===0){
     const li=document.createElement('li');
-    li.textContent=`${r.date} — ${r.roll} — ${r.name} — Class: ${r.class||'N/A'}`;
+    li.textContent='No attendance records found for this roll.';
+    ul.appendChild(li);
+    return;
+  }
+  recs.forEach(r=>{
+    const classText=r.class||'N/A';
+    const li=document.createElement('li');
+    li.textContent=`${r.date} — ${r.roll} — ${r.name} — Class: ${classText}`;
     ul.appendChild(li);
   });
 }
@@ -312,55 +331,66 @@ function showStudentHistory(roll,ulId){
 // ---------- Students & Attendance ----------
 function renderStudents(){
   const ul=document.getElementById('stuList'); ul.innerHTML='';
-  loadStudents().forEach(s=>{ const li=document.createElement('li'); li.textContent=`${s.roll} — ${s.name} — ${s.class||'N/A'}`; ul.appendChild(li); });
+  loadStudents().forEach(s=>{
+    const li=document.createElement('li');
+    li.textContent=`${s.roll} — ${s.name} — ${s.class||'N/A'}`; ul.appendChild(li);
+  });
 }
 function renderAttendance(){
   const ul=document.getElementById('attList'); ul.innerHTML='';
-  loadAttendance().forEach(r=>{ const li=document.createElement('li'); li.textContent=`${r.date} ${new Date(r.ts).toLocaleTimeString()} — ${r.roll} — ${r.name} — Class: ${r.class||'N/A'}`; ul.appendChild(li); });
+  loadAttendance().forEach(r=>{
+    const classText=r.class||'N/A';
+    const li=document.createElement('li');
+    li.textContent=`${r.date} ${new Date(r.ts).toLocaleTimeString()} — ${r.roll} — ${r.name} — Class: ${classText}`;
+    ul.appendChild(li);
+  });
 }
 
-// ---------- CSV Export/Import ----------
+// ---------- CSV ----------
 function downloadCSV(data,filename){ const blob=new Blob([data],{type:'text/csv'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url;a.download=filename;a.click(); URL.revokeObjectURL(url); }
-function escapeCsv(val){ if(val==null) return ''; if(String(val).includes(',') || String(val).includes('"')) return `"${String(val).replace(/"/g,'""')}"`; return String(val); }
 
 document.getElementById('exportStudents').addEventListener('click',()=>{
-  const stu=loadStudents(); let csv="roll,name,class\n"; stu.forEach(s=>{csv+=`${escapeCsv(s.roll)},${escapeCsv(s.name)},${escapeCsv(s.class)}\n`;}); downloadCSV(csv,"students.csv");
+  const stu=loadStudents(); let csv="roll,name,class\n";
+  stu.forEach(s=>{csv+=`${escapeCsv(s.roll)},${escapeCsv(s.name)},${escapeCsv(s.class)}\n`;}); downloadCSV(csv,"students.csv");
 });
 document.getElementById('exportRawAttendance').addEventListener('click',()=>{
-  const recs=loadAttendance(); let csv="roll,name,class,timestamp,date\n"; recs.forEach(r=>{csv+=`${escapeCsv(r.roll)},${escapeCsv(r.name)},${escapeCsv(r.class)},${r.ts},${r.date}\n`;}); downloadCSV(csv,"attendance_raw.csv");
+  const recs=loadAttendance(); let csv="roll,name,class,timestamp,date\n";
+  recs.forEach(r=>{csv+=`${escapeCsv(r.roll)},${escapeCsv(r.name)},${escapeCsv(r.class||r.cls)},${r.ts},${r.date}\n`;}); downloadCSV(csv,"attendance_raw.csv");
 });
+function escapeCsv(val){ if(val==null) return ''; if(String(val).includes(',') || String(val).includes('"')) return `"${String(val).replace(/"/g,'""')}"`; return String(val); }
+
 document.getElementById('importCSV').addEventListener('change',e=>{
   const file=e.target.files[0]; if(!file) return;
   const reader=new FileReader(); reader.onload=ev=>importCSV(ev.target.result); reader.readAsText(file);
 });
 function importCSV(text){
-  const lines=(text||'').trim().split(/\r?\n/); const stu=loadStudents();
+  const lines=(text||'').trim().split(/\r?\n/);
+  const stu=loadStudents();
   for(let i=0;i<lines.length;i++){
-    const line = lines[i].trim(); if(!line) continue;
-    const cols = line.split(','); if(cols.length < 2) continue;
+    const line=lines[i].trim();
+    if(!line) continue;
+    const cols=line.split(',');
+    if(cols.length<2) continue;
     if(i===0 && /^roll$/i.test(cols[0].trim())) continue;
-    const roll = (cols[0]||'').trim(); const name = (cols[1]||'').trim(); const cls = (cols[2]||'N/A').trim();
+    const roll=(cols[0]||'').trim();
+    const name=(cols[1]||'').trim();
+    const cls=(cols[2]||'N/A').trim();
     if(roll && name && !stu.find(s=>s.roll===roll)) stu.push({roll,name,class:cls});
   }
   saveStudents(stu); renderStudents();
 }
 
 // ---------- Reports ----------
-document.getElementById('workingDays').value = loadWorkingDays();
-document.getElementById('workingDays').addEventListener('change',()=>{
-  const val = parseInt(document.getElementById('workingDays').value)||0;
-  saveWorkingDays(val);
-});
-
 function calculateReport(){
   const recs=loadAttendance();
-  const workingDays=loadWorkingDays()||0;
+  const workingDaysInput=parseInt(document.getElementById('workingDays').value)||0;
+  saveWorkingDays(workingDaysInput);
   const studentReport={},classReport={};
 
   recs.forEach(r=>{
     const d=new Date(r.date);
-    const monthKey = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-    const stuKey = `${r.roll}|${monthKey}`;
+    const monthKey=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    const stuKey=`${r.roll}|${monthKey}`;
     if(!studentReport[stuKey]) studentReport[stuKey]={roll:r.roll,name:r.name,class:r.class||'N/A',month:monthKey,days:new Set()};
     studentReport[stuKey].days.add(r.date);
   });
@@ -369,7 +399,7 @@ function calculateReport(){
   for(const k in studentReport){
     const item=studentReport[k];
     const parts=item.month.split('-').map(Number);
-    const totalDays=workingDays>0 ? workingDays : new Date(parts[0],parts[1],0).getDate();
+    const totalDays = workingDaysInput>0 ? workingDaysInput : new Date(parts[0], parts[1], 0).getDate();
     const attended=item.days.size;
     const perc=totalDays>0 ? ((attended/totalDays)*100).toFixed(1) : '0.0';
     studentRows.push({roll:item.roll,name:item.name,class:item.class,month:item.month,attended:attended,totalDays:totalDays,perc:perc});
@@ -389,6 +419,7 @@ function calculateReport(){
     const perc=maxPossible>0 ? ((c.totalAttendance/maxPossible)*100).toFixed(1) : '0.0';
     classRows.push({class:c.class,month:c.month,totalStudents:c.totalStudents,totalDays:c.totalDays,totalAttendance:c.totalAttendance,perc:perc});
   }
+
   return {studentRows,classRows};
 }
 
