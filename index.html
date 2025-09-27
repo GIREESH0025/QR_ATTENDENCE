@@ -93,7 +93,6 @@ nav button.active-nav {
     box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.2);
     transform: translateY(0);
 }
-/* REMOVED: [data-tab="gen"] CSS since we use the .active-nav class now */
 
 /* --- Tab Content: The Main Card Container --- */
 .tab {
@@ -402,7 +401,8 @@ tr:last-child td {
 <h1>Facial Recognition Attendance System (IndexedDB)</h1>
 
 <nav>
-    <button data-tab="gen" class="active-nav">Register Face</button> <button data-tab="scan">Scan Face</button>
+    <button data-tab="gen" class="active-nav">Register Face</button>
+    <button data-tab="scan">Scan Face</button>
     <button data-tab="manual">Manual Attendance</button>
     <button data-tab="students">Students</button>
     <button data-tab="attendance">Attendance</button>
@@ -683,7 +683,6 @@ document.querySelectorAll('nav button').forEach(btn=>{
         }
     });
 });
-// REMOVED: document.querySelector('nav button').click(); // This is no longer strictly necessary due to HTML fix
 
 // ---------- Register Face (Replaces Generate QR) ----------
 const regFaceBtn=document.getElementById('regFaceBtn');
@@ -694,10 +693,21 @@ const genStatus=document.getElementById('genStatus');
 let regStream=null;
 
 regCamBtn.addEventListener('click', async()=>{
+    const roll=document.getElementById('genRoll').value.trim();
+    const name=document.getElementById('genName').value.trim();
+    if(!roll || !name){ 
+        alert('Enter Roll Number and Name first.'); 
+        return; 
+    }
+    
     try{
         if(regStream){ stopRegCam(); }
+        
+        // Request camera access
         regStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user"}});
         regVideo.srcObject=regStream; 
+        
+        // Show video and buttons on success
         regVideo.style.display='block';
         regCanvas.style.display='block';
         regFaceBtn.style.display='inline-block';
@@ -714,9 +724,13 @@ regCamBtn.addEventListener('click', async()=>{
         genStatus.innerHTML=`<small style="color:green">✔ Camera started. Position face in the center.</small>`;
     }catch(e){
         console.error("Camera error:",e); 
+        // Stop stream if it started partially
+        stopRegCam(); 
         alert("Could not access camera. Ensure you have a camera and have granted permission."); 
-        genStatus.innerHTML="❌ Camera access failed.";
-        stopRegCam();
+        genStatus.innerHTML="❌ Camera access failed. Check console and permissions.";
+        // Ensure buttons are reset on failure
+        regFaceBtn.style.display='none';
+        regCamBtn.style.display='inline-block';
     }
 });
 
