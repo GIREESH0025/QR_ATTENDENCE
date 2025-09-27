@@ -499,7 +499,7 @@ tr:last-child td {
 </table>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<script src="https://justadudewhohacks.github.io/face-api.js/dist/face-api.min.js"></script>
 
 <script>
 // --- START OF JAVASCRIPT (Facial Recognition / IndexedDB Version) ---
@@ -600,8 +600,8 @@ function loadWorkingDays(){ return parseInt(localStorage.getItem('workingDays')|
 openDB().catch(e => console.error("Database initialization failed:", e));
 
 // ---------- Face Recognition Setup ----------
-// FIX: Updated MODEL_URL to a reliable Face-API CDN path
-const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
+// FIX: Updated MODEL_URL to the highly stable GitHub Pages model path
+const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models/';
 let faceMatcher = null;
 const startScanBtn = document.getElementById('startScan');
 const scanResultDiv = document.getElementById('scanResult');
