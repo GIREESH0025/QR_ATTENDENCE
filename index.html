@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>QR Attendance System (IndexedDB)</title>
+<title>Facial Recognition Attendance System (IndexedDB)</title>
 <style>
-/* --- CSS Variables for Easy Theming --- */
+/* --- CSS Variables for Easy Theming (Kept the same) --- */
 :root {
     --primary-color: #007bff; /* Blue */
     --secondary-color: #28a745; /* Green for success */
@@ -22,7 +22,6 @@
 
 /* --- Base & Typography --- */
 body {
-    /* Changed font-family to one closer to the screenshot's clean look */
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
     padding: 0;
@@ -45,7 +44,6 @@ h2 {
     margin: 10px 0 20px;
     font-size: 1.8rem;
     font-weight: 600;
-    /* Removed bottom border to match screenshot's "Generate QR Code" look */
     border-bottom: none; 
     padding-bottom: 0;
     max-width: 800px;
@@ -73,7 +71,7 @@ nav {
 nav button {
     padding: 12px 22px;
     border: none;
-    border-radius: 6px; /* Reduced border-radius from 25px to 6px to match screenshot's sharper edges */
+    border-radius: 6px; 
     background: var(--primary-color);
     color: var(--text-color-light);
     font-size: 15px;
@@ -81,7 +79,6 @@ nav button {
     cursor: pointer;
     transition: background 0.3s, transform 0.2s, box-shadow 0.3s;
     margin: 5px;
-    /* Adjusted shadow to match screenshot's subtle lift */
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
 }
 
@@ -96,7 +93,6 @@ nav button.active-nav {
     box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.2);
     transform: translateY(0);
 }
-/* Ensure 'Generate QR' button is blue and active on load, matching the screenshot */
 [data-tab="gen"] { 
     background: #004c99;
     box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.2);
@@ -105,11 +101,11 @@ nav button.active-nav {
 /* --- Tab Content: The Main Card Container --- */
 .tab {
     display: none;
-    max-width: 800px; /* Reduced max-width slightly to match screenshot's card size */
+    max-width: 800px; 
     margin: 0 auto 50px;
-    padding: 40px; /* Increased padding for more inner space */
+    padding: 40px; 
     background: var(--background-white);
-    border-radius: 12px; /* Slightly adjusted border-radius */
+    border-radius: 12px; 
     box-shadow: var(--shadow-light);
     animation: fadeIn 0.5s ease-out;
 }
@@ -126,53 +122,53 @@ nav button.active-nav {
 /* --- Form Elements & Inputs --- */
 label {
     display: block;
-    margin: 20px 0 8px; /* Adjusted margins for better spacing */
+    margin: 20px 0 8px; 
     font-weight: 600;
-    color: #495057; /* Slightly darker/more prominent text color */
+    color: #495057; 
     font-size: 1rem;
 }
 
 input[type="text"], 
 input[type="number"], 
 input[type="file"] {
-    width: 100%; /* Make inputs full width of their container */
-    max-width: 500px; /* Limit max width for better form aesthetics */
-    padding: 12px 15px; /* Increased padding to match screenshot's field size */
+    width: 100%; 
+    max-width: 500px; 
+    padding: 12px 15px; 
     border-radius: 8px;
-    border: 1px solid #dee2e6; /* Lighter border color for a softer look */
-    margin-bottom: 5px; /* Reduced margin-bottom as labels already have margin */
+    border: 1px solid #dee2e6; 
+    margin-bottom: 5px; 
     transition: border-color 0.3s, box-shadow 0.3s;
     font-size: 1rem;
-    box-sizing: border-box; /* Ensures padding doesn't affect total width */
+    box-sizing: border-box; 
 }
 
 input[type="text"]:focus, 
 input[type="number"]:focus {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15); /* Softer focus glow */
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15); 
     outline: none;
 }
 
 /* --- Buttons (General) --- */
 .tab button, .tab a.button {
-    padding: 12px 25px; /* Increased padding for the main button, matching screenshot */
+    padding: 12px 25px; 
     border: none;
-    border-radius: 6px; /* Matches nav button radius */
+    border-radius: 6px; 
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
     transition: background 0.3s, transform 0.2s, box-shadow 0.3s;
-    margin: 25px 5px 15px 0; /* Increased top margin for separation from inputs */
+    margin: 25px 5px 15px 0; 
     display: inline-block;
 }
 
 /* Primary Button (Generate) */
-#genBtn, #markManual, #startScan {
+#regFaceBtn, #markManual, #startScan {
     background: var(--primary-color);
     color: var(--text-color-light);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
-#genBtn:hover, #markManual:hover, #startScan:hover {
+#regFaceBtn:hover, #markManual:hover, #startScan:hover {
     background: #0056b3;
     transform: translateY(-1px);
 }
@@ -199,8 +195,8 @@ button[id^="export"]:hover, #genReport:hover, #stopScan:hover, #backupDB:hover {
 
 /* --- Specific Section Styles --- */
 
-/* QR Canvas */
-#qrCanvas {
+/* QR Canvas (Modified for Face Registration) */
+#faceRegVideo {
     display: block;
     margin: 25px auto;
     border: 5px solid var(--primary-color);
@@ -208,7 +204,22 @@ button[id^="export"]:hover, #genReport:hover, #stopScan:hover, #backupDB:hover {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     max-width: 90%;
     height: auto;
+    /* Face-API.js specific: position the canvas over the video */
+    position: relative;
 }
+
+#faceRegCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    /* Make canvas overlay the video properly */
+    margin: 25px auto; 
+    /* Ensures canvas is sized correctly */
+    display: block;
+    border-radius: 12px;
+    max-width: 90%;
+}
+
 
 #genStatus {
     text-align: center;
@@ -217,18 +228,29 @@ button[id^="export"]:hover, #genReport:hover, #stopScan:hover, #backupDB:hover {
     font-weight: 500;
 }
 #genStatus small { display: block; padding: 5px; border-radius: 4px; }
+#genStatus small[style*="orange"] { color: orange; background: rgba(255, 165, 0, 0.1); }
 #genStatus small[style*="red"] { color: var(--danger-color); background: rgba(220, 53, 69, 0.1); }
 #genStatus small[style*="green"] { color: var(--secondary-color); background: rgba(40, 167, 69, 0.1); }
 
 /* Scanner */
-#preview {
-    display: block;
+#preview-container {
+    position: relative;
+    width: 300px; /* Base width */
+    height: 200px; /* Base height */
     margin: 0 auto 20px;
+}
+
+#preview, #overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: block;
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    max-width: 100%;
-    height: auto;
+    width: 100%;
+    height: 100%;
 }
+
 #scanControls {
     text-align: center;
     margin-bottom: 20px;
@@ -279,7 +301,7 @@ button[id^="export"]:hover, #genReport:hover, #stopScan:hover, #backupDB:hover {
 }
 
 
-/* --- Tables --- */
+/* --- Tables (Kept the same) --- */
 table {
     width: 100%;
     margin: 20px auto 30px;
@@ -316,7 +338,6 @@ tbody tr:hover {
     z-index: 1; 
 }
 
-/* Last row/cell cleanup */
 th:last-child, td:last-child {
     border-right: none;
 }
@@ -324,7 +345,7 @@ tr:last-child td {
     border-bottom: none;
 }
 
-/* --- Responsiveness --- */
+/* --- Responsiveness (Kept the same) --- */
 @media (max-width: 992px) {
     .tab {
         padding: 20px;
@@ -352,7 +373,6 @@ tr:last-child td {
         width: 100%;
     }
     
-    /* Table for small screens: makes table cells behave like block elements */
     table {
         display: block;
         overflow-x: auto; 
@@ -373,47 +393,52 @@ tr:last-child td {
         max-width: 100%; 
     }
     
-    /* Re-sizing the canvas and video for very small screens */
-    #qrCanvas, #preview {
+    #faceRegVideo, #preview {
         max-width: 90%;
         height: auto;
     }
 }
-       
+        
 </style>
 </head>
 <body>
-<h1>QR Attendance System (IndexedDB)</h1>
+<h1>Facial Recognition Attendance System (IndexedDB)</h1>
 
 <nav>
-    <button data-tab="gen">Generate QR</button>
-    <button data-tab="scan">Scan QR</button>
-    <button data-tab="manual">Manual Attendance</button>
-    <button data-tab="students">Students</button>
-    <button data-tab="attendance">Attendance</button>
-    <button data-tab="reports">Reports</button>
+    <button data-tab="gen">Register Face</button>
+    <button data-tab="scan">Scan Face</button>
+    <button data-tab="manual">Manual Attendance</button>
+    <button data-tab="students">Students</button>
+    <button data-tab="attendance">Attendance</button>
+    <button data-tab="reports">Reports</button>
 </nav>
 
 <div id="gen" class="tab">
-<h2>Generate QR Code</h2>
-<label for="genRoll">Roll:</label> 
+<h2>Register Student Face</h2>
+<label for="genRoll">Roll:</label> 
 <input id="genRoll" type="text" placeholder="Student Roll Number"><br>
-<label for="genName">Name:</label> 
+<label for="genName">Name:</label> 
 <input id="genName" type="text" placeholder="Student Name"><br>
-<label for="genClass">Class:</label> 
+<label for="genClass">Class:</label> 
 <input id="genClass" type="text" placeholder="e.g., 10A, BTech CS"><br>
-<button id="genBtn">Generate QR Code</button>
-<canvas id="qrCanvas" width="450" height="450"></canvas><br>
-<a id="downloadBtn" style="display:none" class="button">Download QR</a>
+<div style="text-align: center;">
+    <button id="startRegCam" class="button">Start Camera</button>
+    <button id="regFaceBtn" style="display:none;">Capture & Register Face</button>
+</div>
+<video id="faceRegVideo" width="450" height="340" autoplay muted style="display:none;"></video>
+<canvas id="faceRegCanvas" width="450" height="340" style="display:none;"></canvas>
 <div id="genStatus"></div>
 </div>
 
 <div id="scan" class="tab">
-<h2>Scan QR Code</h2>
-<video id="preview" width="300" height="200" style="border:1px solid var(--border-color)"></video><br>
+<h2>Scan Face for Attendance</h2>
+<div id="preview-container">
+    <video id="preview" width="300" height="200" autoplay muted style="border:1px solid var(--border-color);"></video>
+    <canvas id="overlay" width="300" height="200"></canvas>
+</div>
 <div id="scanControls">
-    <button id="startScan">Start Scan</button>
-    <button id="stopScan">Stop Scan</button>
+    <button id="startScan">Start Face Scan</button>
+    <button id="stopScan">Stop Scan</button>
 </div>
 <div id="scanResult"></div>
 <h3>Attendance History for Scanned Student</h3>
@@ -422,7 +447,7 @@ tr:last-child td {
 
 <div id="manual" class="tab">
 <h2>Manual Attendance</h2>
-<label for="manualRoll">Enter Roll Number:</label> 
+<label for="manualRoll">Enter Roll Number:</label> 
 <input type="text" id="manualRoll" placeholder="Roll Number"><br>
 <button id="markManual">Mark Attendance</button>
 <div id="manualResult"></div>
@@ -432,7 +457,7 @@ tr:last-child td {
 
 <div id="students" class="tab">
 <h2>Students List & Management</h2>
-<label for="importCSV">Import Students from CSV:</label>
+<label for="importCSV">Import Students from CSV (Roll, Name, Class):</label>
 <input type="file" id="importCSV" accept=".csv">
 <button id="exportStudents">Export Students CSV</button>
 <button id="backupDB">Backup Database (JSON)</button>
@@ -451,7 +476,7 @@ tr:last-child td {
 
 <div id="reports" class="tab">
 <h2>Monthly Attendance Report Generation</h2>
-<label for="workingDays">Enter Working Days for Percentage Calculation:</label> 
+<label for="workingDays">Enter Working Days for Percentage Calculation:</label> 
 <input type="number" id="workingDays" placeholder="e.g. 22" value="22">
 <button id="genReport">Generate Report</button>
 
@@ -478,88 +503,91 @@ tr:last-child td {
 </table>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/qrious/dist/qrious.min.js"></script>
-<script src="https://unpkg.com/@zxing/library@latest"></script>
-<script>
-// --- START OF JAVASCRIPT (IndexedDB Version) ---
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 
-// ---------- IndexedDB Setup ----------
+<script>
+// --- START OF JAVASCRIPT (Facial Recognition / IndexedDB Version) ---
+
+// ---------- IndexedDB Setup (Kept the same) ----------
 const DB_NAME = 'AttendanceDB';
-const DB_VERSION = 1;
+const DB_VERSION = 2; // Increased DB version to trigger upgrade
 const STORE_STUDENTS = 'students';
 const STORE_ATTENDANCE = 'attendance';
 let db;
 
 function openDB() {
-    return new Promise((resolve, reject) => {
-        const request = indexedDB.open(DB_NAME, DB_VERSION);
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-        request.onupgradeneeded = (event) => {
-            db = event.target.result;
-            
-            // Students store: keyPath is 'roll' for easy lookup/update
-            if (!db.objectStoreNames.contains(STORE_STUDENTS)) {
-                db.createObjectStore(STORE_STUDENTS, { keyPath: 'roll' });
-            }
+        request.onupgradeneeded = (event) => {
+            db = event.target.result;
+            
+            // Students store: keyPath is 'roll' for easy lookup/update
+            if (!db.objectStoreNames.contains(STORE_STUDENTS)) {
+                // Students store now needs to handle facial 'descriptors'
+                db.createObjectStore(STORE_STUDENTS, { keyPath: 'roll' });
+            } else if (event.oldVersion < 2) {
+                // Future-proofing: if upgrading from old schema, students must be re-registered for face data
+            }
 
-            // Attendance store: keyPath is 'id' (autoincrement) for unique records
-            if (!db.objectStoreNames.contains(STORE_ATTENDANCE)) {
-                const attendanceStore = db.createObjectStore(STORE_ATTENDANCE, { keyPath: 'id', autoIncrement: true });
-                // Index for quick lookups by roll and date
-                attendanceStore.createIndex('roll_date', ['roll', 'date'], { unique: false });
-            }
-        };
+            // Attendance store: keyPath is 'id' (autoincrement) for unique records
+            if (!db.objectStoreNames.contains(STORE_ATTENDANCE)) {
+                const attendanceStore = db.createObjectStore(STORE_ATTENDANCE, { keyPath: 'id', autoIncrement: true });
+                // Index for quick lookups by roll and date
+                attendanceStore.createIndex('roll_date', ['roll', 'date'], { unique: false });
+            }
+        };
 
-        request.onsuccess = (event) => {
-            db = event.target.result;
-            console.log('IndexedDB opened successfully.');
-            resolve(db);
-        };
+        request.onsuccess = (event) => {
+            db = event.target.result;
+            console.log('IndexedDB opened successfully.');
+            resolve(db);
+        };
 
-        request.onerror = (event) => {
-            console.error("IndexedDB error:", event.target.errorCode);
-            reject(new Error('IndexedDB failed to open.'));
-        };
-    });
+        request.onerror = (event) => {
+            console.error("IndexedDB error:", event.target.errorCode);
+            reject(new Error('IndexedDB failed to open.'));
+        };
+    });
 }
 
 // Function to get all data from a store (used by loadStudents, loadAttendance)
 function getAllData(storeName) {
-    return new Promise(async (resolve, reject) => {
-        await openDB();
-        const transaction = db.transaction([storeName], 'readonly');
-        const store = transaction.objectStore(storeName);
-        const request = store.getAll();
+    return new Promise(async (resolve, reject) => {
+        await openDB();
+        const transaction = db.transaction([storeName], 'readonly');
+        const store = transaction.objectStore(storeName);
+        const request = store.getAll();
 
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-    });
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    });
 }
 
 // Function to get a single item by key (for students by roll)
 function getDataByKey(storeName, key) {
-    return new Promise(async (resolve, reject) => {
-        await openDB();
-        const transaction = db.transaction([storeName], 'readonly');
-        const store = transaction.objectStore(storeName);
-        const request = store.get(key);
+    return new Promise(async (resolve, reject) => {
+        await openDB();
+        const transaction = db.transaction([storeName], 'readonly');
+        const store = transaction.objectStore(storeName);
+        const request = store.get(key);
 
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-    });
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    });
 }
 
 // Function to add or update an item (used by saveStudent, saveAttendanceRecord)
 function putData(storeName, data) {
-    return new Promise(async (resolve, reject) => {
-        await openDB();
-        const transaction = db.transaction([storeName], 'readwrite');
-        const store = transaction.objectStore(storeName);
-        const request = store.put(data);
+    return new Promise(async (resolve, reject) => {
+        await openDB();
+        const transaction = db.transaction([storeName], 'readwrite');
+        const store = transaction.objectStore(storeName);
+        const request = store.put(data);
 
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-    });
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    });
 }
 
 // Custom load/save functions for clarity
@@ -572,518 +600,679 @@ async function saveAttendanceRecord(record) { return putData(STORE_ATTENDANCE, r
 function saveWorkingDays(val){ localStorage.setItem('workingDays',val); }
 function loadWorkingDays(){ return parseInt(localStorage.getItem('workingDays')||'0'); }
 
-// Initialize DB on load
+// Initialize DB and Face Models on load
 openDB().catch(e => console.error("Database initialization failed:", e));
 
-// ---------- Tabs ----------
-document.querySelectorAll('nav button').forEach(btn=>{
-    btn.addEventListener('click',async ()=>{
-        // Remove active class from all tabs and nav buttons
-        document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-        document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active-nav'));
-        
-        // Add active class to selected tab and nav button
-        document.getElementById(btn.dataset.tab).classList.add('active');
-        btn.classList.add('active-nav');
+// ---------- Face Recognition Setup ----------
+const MODEL_URL = 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/models';
+let faceMatcher = null;
+const startScanBtn = document.getElementById('startScan');
+const scanResultDiv = document.getElementById('scanResult');
+const preview = document.getElementById('preview');
+const overlayCanvas = document.getElementById('overlay');
+let recognitionInterval = null;
+let lastScannedRoll = "";
+const detectionOptions = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 });
+const recognitionThreshold = 0.6; // Lower value is more strict match
 
-        // Render relevant data when switching tabs
-        if(btn.dataset.tab==='students') renderStudents();
-        if(btn.dataset.tab==='attendance') renderAttendance();
-        if(btn.dataset.tab==='reports'){
-            const savedDays = loadWorkingDays();
-            if(savedDays > 0) document.getElementById('workingDays').value = savedDays;
-            document.getElementById('genReport').click(); // Auto-generate report
-        }
-    });
+// Load all models and pre-process face data for fast lookup
+async function loadFaceModels() {
+    scanResultDiv.textContent = "Loading Face Models...";
+    try {
+        await faceapi.nets.tinyFaceDetector.load(MODEL_URL);
+        await faceapi.nets.faceLandmark68Net.load(MODEL_URL);
+        await faceapi.nets.faceRecognitionNet.load(MODEL_URL);
+        scanResultDiv.textContent = "Models loaded. Processing student data...";
+        await trainFaceData();
+        scanResultDiv.textContent = "Ready to scan.";
+        startScanBtn.disabled = false;
+    } catch(e) {
+        console.error("Failed to load Face-API models:", e);
+        scanResultDiv.textContent = "❌ Error loading models. Check console.";
+        startScanBtn.disabled = true;
+    }
+}
+
+// Load students with descriptors and create FaceMatcher
+async function trainFaceData() {
+    const students = await loadStudents();
+    const labeledDescriptors = [];
+
+    students.forEach(student => {
+        if (student.descriptors && student.descriptors.length > 0) {
+            // Convert plain array to Float32Array for face-api
+            const descriptors = student.descriptors.map(arr => new Float32Array(arr));
+            // Label is the roll number (used for identification)
+            const labeledDescriptor = new faceapi.LabeledFaceDescriptors(student.roll, descriptors);
+            labeledDescriptors.push(labeledDescriptor);
+        }
+    });
+
+    if (labeledDescriptors.length > 0) {
+        faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, recognitionThreshold);
+    } else {
+        faceMatcher = null;
+    }
+}
+
+// Initial model load for the scan tab
+document.addEventListener('DOMContentLoaded', () => {
+    // Only load models when the 'scan' button is clicked for the first time
+    document.querySelector('nav button[data-tab="scan"]').addEventListener('click', loadFaceModels, { once: true });
+});
+
+// ---------- Tabs (Kept the same) ----------
+document.querySelectorAll('nav button').forEach(btn=>{
+    btn.addEventListener('click',async ()=>{
+        // Stop all active camera streams when switching tabs
+        stopRegCam();
+        stopScan();
+
+        // Remove active class from all tabs and nav buttons
+        document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+        document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active-nav'));
+        
+        // Add active class to selected tab and nav button
+        document.getElementById(btn.dataset.tab).classList.add('active');
+        btn.classList.add('active-nav');
+
+        // Render relevant data when switching tabs
+        if(btn.dataset.tab==='students') renderStudents();
+        if(btn.dataset.tab==='attendance') renderAttendance();
+        if(btn.dataset.tab==='reports'){
+            const savedDays = loadWorkingDays();
+            if(savedDays > 0) document.getElementById('workingDays').value = savedDays;
+            document.getElementById('genReport').click(); // Auto-generate report
+        }
+    });
 });
 document.querySelector('nav button').click(); // default to first tab on load
 
-// ---------- Generate QR ----------
-const genBtn=document.getElementById('genBtn');
-const qrCanvas=document.getElementById('qrCanvas');
-const downloadBtn=document.getElementById('downloadBtn');
+// ---------- Register Face (Replaces Generate QR) ----------
+const regFaceBtn=document.getElementById('regFaceBtn');
+const regCamBtn=document.getElementById('startRegCam');
+const regVideo=document.getElementById('faceRegVideo');
+const regCanvas=document.getElementById('faceRegCanvas');
 const genStatus=document.getElementById('genStatus');
-let qr=null;
+let regStream=null;
 
-genBtn.addEventListener('click',async ()=>{
-    const roll=document.getElementById('genRoll').value.trim();
-    let name=document.getElementById('genName').value.trim();
-    let cls=document.getElementById('genClass').value.trim();
-    
-    if(!roll){ alert('Enter Roll Number.'); return; }
-    if(!name) name="Unknown";
-    if(!cls) cls="N/A";
-
-    const existingStudent = await getDataByKey(STORE_STUDENTS, roll);
-
-    const newStudentData = {roll, name, class: cls};
-
-    try {
-        if(existingStudent){
-            // Check if data is the same, otherwise update student info
-            if(existingStudent.name !== name || existingStudent.class !== cls){
-                await saveStudent(newStudentData);
-                genStatus.innerHTML=`<small style="color:orange">⚠️ Student info updated for: ${roll}</small>`;
-            } else {
-                genStatus.innerHTML=`<small style="color:red">❌ QR already generated for: ${roll}</small>`;
-                // Still generate/show QR if it exists
-            }
-        } else {
-            await saveStudent(newStudentData);
-            genStatus.innerHTML=`<small style="color:green">✔ Student added & QR generated: <code>${roll}</code></small>`;
-        }
-    } catch(e) {
-        genStatus.innerHTML=`<small style="color:red">❌ Database Error: Failed to save/update student.</small>`;
-        console.error(e);
-        return;
-    }
-
-    // Payload format: ATT|Roll|Name|Class
-    const payload=`ATT|${roll}|${name}|${cls}`;
-    const ctx = qrCanvas.getContext('2d'); ctx.clearRect(0,0,qrCanvas.width,qrCanvas.height);
-
-    qr = new QRious({
-        element: qrCanvas,
-        value: payload,
-        size: 450,
-        level: 'H',
-        background: 'white',
-        foreground: 'black'
-    });
-
-    downloadBtn.href=qrCanvas.toDataURL('image/png');
-    downloadBtn.download=`qr_${roll}.png`;
-    downloadBtn.style.display='inline-block';
-    if(!existingStudent || existingStudent.name !== name || existingStudent.class !== cls){
-        genStatus.innerHTML=`<small style="color:green">✔ QR generated: <code>${roll}</code></small>`;
-    }
+regCamBtn.addEventListener('click', async()=>{
+    try{
+        if(regStream){ stopRegCam(); }
+        regStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user"}});
+        regVideo.srcObject=regStream; 
+        regVideo.style.display='block';
+        regCanvas.style.display='block';
+        regFaceBtn.style.display='inline-block';
+        regCamBtn.style.display='none';
+        
+        regVideo.onloadedmetadata = (e) => regVideo.play();
+        genStatus.innerHTML=`<small style="color:orange">⚠️ Loading models for registration...</small>`;
+        
+        // Load models for quick registration check
+        await faceapi.nets.tinyFaceDetector.load(MODEL_URL);
+        await faceapi.nets.faceLandmark68Net.load(MODEL_URL);
+        await faceapi.nets.faceRecognitionNet.load(MODEL_URL);
+        
+        genStatus.innerHTML=`<small style="color:green">✔ Camera started. Position face in the center.</small>`;
+    }catch(e){
+        console.error("Camera error:",e); 
+        alert("Could not access camera. Ensure you have a camera and have granted permission."); 
+        genStatus.innerHTML="❌ Camera access failed.";
+        stopRegCam();
+    }
 });
 
-// ---------- Scanner & Manual Attendance Handler ----------
-let codeReader=null,activeStream=null,lastScanned="";
-const scanResultDiv = document.getElementById('scanResult');
-const preview = document.getElementById('preview');
+function stopRegCam() {
+    if(regStream){ 
+        regStream.getTracks().forEach(track=>track.stop()); 
+        regStream=null;
+        regVideo.style.display='none';
+        regCanvas.style.display='none';
+        regFaceBtn.style.display='none';
+        regCamBtn.style.display='inline-block';
+    }
+}
+
+regFaceBtn.addEventListener('click',async ()=>{
+    const roll=document.getElementById('genRoll').value.trim();
+    const name=document.getElementById('genName').value.trim();
+    const cls=document.getElementById('genClass').value.trim() || "N/A";
+    
+    if(!roll || !name){ alert('Enter Roll Number and Name.'); return; }
+    
+    try {
+        // 1. Detect face and get descriptor
+        const fullFaceDescriptions = await faceapi.detectSingleFace(regVideo, detectionOptions)
+            .withFaceLandmarks()
+            .withFaceDescriptor();
+
+        if (!fullFaceDescriptions) {
+            genStatus.innerHTML=`<small style="color:red">❌ No face detected. Try again.</small>`;
+            return;
+        }
+
+        // 2. Prepare descriptor for storage (convert Float32Array to standard array)
+        const descriptorArray = Array.from(fullFaceDescriptions.descriptor);
+
+        // 3. Load existing student data
+        const existingStudent = await getDataByKey(STORE_STUDENTS, roll);
+        
+        const newStudentData = {
+            roll, 
+            name, 
+            class: cls,
+            descriptors: existingStudent && existingStudent.descriptors ? existingStudent.descriptors : []
+        };
+        
+        // 4. Update descriptor list
+        let statusMessage = "";
+        
+        if (existingStudent) {
+            // Check if student info changed
+            if (existingStudent.name !== name || existingStudent.class !== cls) {
+                statusMessage = `⚠️ Student info (Name/Class) updated for: ${roll}.`;
+            } else {
+                statusMessage = `⚠ Overwriting face data for: ${roll}.`;
+            }
+        } else {
+            statusMessage = `✔ New student registered: ${roll}.`;
+        }
+        
+        // Overwrite or create new descriptor entry
+        newStudentData.descriptors = [descriptorArray]; 
+
+        // 5. Save/Update student in DB
+        await saveStudent(newStudentData);
+
+        // 6. Final Status
+        genStatus.innerHTML=`<small style="color:green">${statusMessage} Face data saved successfully.</small>`;
+        
+        // Cleanup
+        stopRegCam();
+        trainFaceData(); // Retrain the models with new data
+        
+    } catch(e) {
+        genStatus.innerHTML=`<small style="color:red">❌ Facial Recognition Error. See console.</small>`;
+        console.error(e);
+    }
+});
+
+
+// ---------- Scan Face (Replaces Scan QR) ----------
 
 document.getElementById('startScan').addEventListener('click',async()=>{
-    if(!codeReader) codeReader=new ZXing.BrowserQRCodeReader();
-    scanResultDiv.textContent="Starting camera...";
-    
-    try{
-        if(activeStream){ activeStream.getTracks().forEach(track=>track.stop()); }
-        activeStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
-        preview.srcObject=activeStream; 
-        preview.setAttribute("playsinline",true);
-        await preview.play();
-        scanResultDiv.textContent="Scanning...";
-        
-        codeReader.decodeFromVideoDevice(null,preview,(result,err)=>{
-            if(result){
-                const payload=result.getText();
-                if(payload!==lastScanned){
-                    lastScanned=payload;
-                    handleScan(payload, scanResultDiv.id);
-                    setTimeout(()=>{lastScanned="";}, 3000); 
-                }
-            }
-        });
-    }catch(e){ 
-        console.error("Camera error:",e); 
-        alert("Could not access camera. Ensure you have a camera and have granted permission."); 
-        scanResultDiv.textContent="❌ Camera access failed.";
-    }
+    if (!faceMatcher) {
+        scanResultDiv.textContent = "Models are loading or no students are registered.";
+        // Ensure models are loaded if they weren't
+        await loadFaceModels(); 
+        if (!faceMatcher) {
+             scanResultDiv.textContent = "❌ Cannot start scan: No registered faces or model load failed.";
+             return;
+        }
+    }
+    
+    scanResultDiv.textContent="Starting camera...";
+    
+    try{
+        stopScan(); // Ensure previous stream is stopped
+        
+        // Request camera with environment facing mode
+        let stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
+        preview.srcObject = stream; 
+        
+        // Update global stream variable
+        activeStream = stream;
+        
+        preview.setAttribute("playsinline",true);
+        preview.onloadedmetadata = (e) => {
+            preview.play();
+            // Set canvas dimensions to match video
+            overlayCanvas.width = preview.videoWidth;
+            overlayCanvas.height = preview.videoHeight;
+            document.getElementById('preview-container').style.width = preview.videoWidth + 'px';
+            document.getElementById('preview-container').style.height = preview.videoHeight + 'px';
+            scanResultDiv.textContent="Scanning...";
+            recognitionInterval = setInterval(markAttendanceByFace, 1000); // Check for face every 1 second
+        };
+
+    }catch(e){ 
+        console.error("Camera error:",e); 
+        alert("Could not access camera. Ensure you have a camera and have granted permission."); 
+        scanResultDiv.textContent="❌ Camera access failed.";
+        stopScan();
+    }
 });
 
-document.getElementById('stopScan').addEventListener('click',()=>{
-    if(activeStream){ 
-        activeStream.getTracks().forEach(track=>track.stop()); 
-        activeStream=null; 
-        codeReader.reset();
-    }
-    scanResultDiv.textContent="Scan stopped.";
-});
+function stopScan(){
+    if(activeStream){ 
+        activeStream.getTracks().forEach(track=>track.stop()); 
+        activeStream=null; 
+    }
+    if(recognitionInterval){
+        clearInterval(recognitionInterval);
+        recognitionInterval = null;
+    }
+    lastScannedRoll = "";
+    // Clear canvas
+    const ctx = overlayCanvas.getContext('2d');
+    ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+}
+document.getElementById('stopScan').addEventListener('click',stopScan);
 
-// ---------- Handle Scan + Voice (Refactored for IndexedDB) ----------
-async function handleScan(payload, resultDivId){
-    let roll='';
-    const parts=(payload||'').split('|').map(p=>p.trim());
-    
-    // Extract roll from payload (ATT|Roll|Name|Class or just Roll)
-    if(parts.length>=4 && parts[0].toUpperCase()==='ATT'){ 
-        roll=parts[1]; 
-    } else { 
-        roll=parts[0]||''; 
-    }
 
-    roll=roll.trim()||'';
-    const resultDiv = document.getElementById(resultDivId);
-    const today=new Date().toISOString().slice(0,10);
+async function markAttendanceByFace(){
+    if (!preview || preview.paused || preview.ended || !faceMatcher) return;
 
-    if (!roll) {
-        const msg=`Invalid QR/Roll Data.`;
-        resultDiv.innerHTML=`<span style="color:var(--danger-color)">❌ ${msg}</span>`;
-        speak(msg);
-        return;
-    }
+    const detections = await faceapi.detectSingleFace(preview, detectionOptions)
+        .withFaceLandmarks()
+        .withFaceDescriptor();
+    
+    const ctx = overlayCanvas.getContext('2d');
+    ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
 
-    let studentExists;
-    let recs;
+    if (detections) {
+        // Draw the bounding box for the detected face
+        const resizedDetection = faceapi.resizeResults(detections, { width: preview.videoWidth, height: preview.videoHeight });
+        faceapi.draw.drawDetections(overlayCanvas, resizedDetection);
 
-    try {
-        studentExists = await getDataByKey(STORE_STUDENTS, roll);
-        recs = await loadAttendance();
-    } catch (e) {
-        console.error("DB Read Error:", e);
-        const msg = `DB Read Error for ${roll}.`;
-        resultDiv.innerHTML=`<span style="color:var(--danger-color)">❌ ${msg}</span>`;
-        speak(msg);
-        return;
-    }
-    
-    if(!studentExists){
-        const msg=`Invalid Roll Number: ${roll}`;
-        resultDiv.innerHTML=`<span style="color:var(--danger-color)">❌ ${msg}</span>`;
-        speak(msg);
-        showStudentHistory(roll, resultDivId === 'scanResult' ? 'scanHistory' : 'manualHistory');
-        return;
-    }
-    
-    const studentName = studentExists.name;
-    const studentClass = studentExists.class || 'N/A';
+        // Find the best match
+        const bestMatch = faceMatcher.findBestMatch(detections.descriptor);
+        const roll = bestMatch.label;
+        
+        // Draw label (Name/Roll or 'unknown') on the face
+        const drawBox = new faceapi.draw.DrawBox(resizedDetection.box, { label: bestMatch.toString() });
+        drawBox.draw(overlayCanvas);
 
-    // Check for existing attendance today
-    if(recs.find(r=>r.roll===roll && r.date===today)){
-        const msg=`Attendance already marked for ${studentName} (Roll: ${roll})`;
-        resultDiv.innerHTML=`<span style="color:var(--danger-color)">❌ ${msg}</span>`;
-        speak(msg);
-        showStudentHistory(roll, resultDivId === 'scanResult' ? 'scanHistory' : 'manualHistory');
-        return;
-    }
-
-    // Mark attendance
-    const newRecord = {roll:roll, name:studentName, class:studentClass, ts:Date.now(), date:today};
-    try {
-        await saveAttendanceRecord(newRecord);
-        const msg=`Attendance marked for ${studentName} (Roll: ${roll})`;
-        resultDiv.innerHTML=`<span style="color:var(--secondary-color)">✅ ${msg} — Class: ${studentClass}</span>`;
-        speak(msg);
-        showStudentHistory(roll, resultDivId === 'scanResult' ? 'scanHistory' : 'manualHistory');
-    } catch(e) {
-        console.error("DB Write Error:", e);
-        const msg = `Failed to mark attendance for ${studentName}.`;
-        resultDiv.innerHTML=`<span style="color:var(--danger-color)">❌ ${msg}</span>`;
-        speak(msg);
-    }
+        if(roll !== 'unknown' && roll !== lastScannedRoll) {
+            lastScannedRoll = roll;
+            handleScan(roll, 'scanResult');
+            // Reset lastScannedRoll after a cool-down period
+            setTimeout(() => { lastScannedRoll = ""; }, 5000); 
+        } else if (roll === 'unknown') {
+            scanResultDiv.innerHTML = `<span style="color:var(--danger-color)">❌ Face detected but no match found.</span>`;
+        }
+    } else {
+        scanResultDiv.innerHTML = "No face detected in view.";
+    }
 }
 
-// ---------- Manual Attendance ----------
+
+// ---------- Manual Attendance Handler (Modified from handleScan to take Roll directly) ----------
+
+// Renamed from handleScan to reflect its purpose now: mark attendance by roll.
+// It is still used by both Manual Attendance and the Facial Recognition loop.
+async function handleScan(roll, resultDivId){
+    roll = roll.trim() || '';
+    const resultDiv = document.getElementById(resultDivId);
+    const today = new Date().toISOString().slice(0,10);
+
+    if (!roll) {
+        const msg=`Invalid Roll Data.`;
+        resultDiv.innerHTML=`<span style="color:var(--danger-color)">❌ ${msg}</span>`;
+        speak(msg);
+        return;
+    }
+
+    let studentExists;
+    let recs;
+
+    try {
+        studentExists = await getDataByKey(STORE_STUDENTS, roll);
+        recs = await loadAttendance();
+    } catch (e) {
+        console.error("DB Read Error:", e);
+        const msg = `DB Read Error for ${roll}.`;
+        resultDiv.innerHTML=`<span style="color:var(--danger-color)">❌ ${msg}</span>`;
+        speak(msg);
+        return;
+    }
+    
+    if(!studentExists){
+        const msg=`Invalid Roll Number: ${roll}`;
+        resultDiv.innerHTML=`<span style="color:var(--danger-color)">❌ ${msg}</span>`;
+        speak(msg);
+        showStudentHistory(roll, resultDivId === 'scanResult' ? 'scanHistory' : 'manualHistory');
+        return;
+    }
+    
+    const studentName = studentExists.name;
+    const studentClass = studentExists.class || 'N/A';
+
+    // Check for existing attendance today
+    const attendanceToday = recs.find(r => r.roll === roll && r.date === today);
+
+    if (attendanceToday){
+        const msg=`Attendance already marked for ${studentName} (Roll: ${roll})`;
+        resultDiv.innerHTML=`<span style="color:var(--danger-color)">❌ ${msg}</span>`;
+        speak('Already marked');
+        showStudentHistory(roll, resultDivId === 'scanResult' ? 'scanHistory' : 'manualHistory');
+        return;
+    }
+
+    // Mark attendance
+    const newRecord = {roll:roll, name:studentName, class:studentClass, ts:Date.now(), date:today};
+    try {
+        await saveAttendanceRecord(newRecord);
+        const msg=`Attendance marked for ${studentName} (Roll: ${roll})`;
+        resultDiv.innerHTML=`<span style="color:var(--secondary-color)">✅ ${msg} — Class: ${studentClass}</span>`;
+        speak(`Welcome ${studentName}`);
+        showStudentHistory(roll, resultDivId === 'scanResult' ? 'scanHistory' : 'manualHistory');
+    } catch(e) {
+        console.error("DB Write Error:", e);
+        const msg = `Failed to mark attendance for ${studentName}.`;
+        resultDiv.innerHTML=`<span style="color:var(--danger-color)">❌ ${msg}</span>`;
+        speak('Database write failed');
+    }
+}
+
+// ---------- Manual Attendance (Kept the same, calls handleScan) ----------
 document.getElementById('markManual').addEventListener('click',()=>{
-    const roll=document.getElementById('manualRoll').value.trim();
-    // Roll is used directly as the payload in handleScan
-    handleScan(roll, 'manualResult'); 
-    document.getElementById('manualRoll').value='';
+    const roll=document.getElementById('manualRoll').value.trim();
+    handleScan(roll, 'manualResult'); 
+    document.getElementById('manualRoll').value='';
 });
 
-// ---------- Voice ----------
+// ---------- Voice (Kept the same) ----------
 function speak(text){
-    try{
-        if('speechSynthesis' in window){
-            window.speechSynthesis.cancel();
-            const utter = new SpeechSynthesisUtterance(text);
-            utter.lang="en-IN";
-            window.speechSynthesis.speak(utter);
-        }
-    }catch(e){ console.error('Speech error',e); }
+    try{
+        if('speechSynthesis' in window){
+            window.speechSynthesis.cancel();
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.lang="en-US"; // Changed to US for wider support/better quality
+            window.speechSynthesis.speak(utter);
+        }
+    }catch(e){ console.error('Speech error',e); }
 }
 
-// ---------- Show History (Refactored for IndexedDB) ----------
+// ---------- Show History (Kept the same) ----------
 async function showStudentHistory(roll,ulId){
-    const allRecs = await loadAttendance();
-    const recs=allRecs.filter(r=>r.roll===roll).sort((a,b) => b.ts - a.ts).slice(0, 10); // Sort by timestamp (newest first)
-    const ul=document.getElementById(ulId); ul.innerHTML='';
-    if(recs.length===0){
-        const li=document.createElement('li');
-        li.textContent='No attendance records found for this roll.';
-        ul.appendChild(li);
-        return;
-    }
-    recs.forEach(r=>{
-        const classText=r.class||'N/A';
-        const li=document.createElement('li');
-        li.textContent=`${r.date} — ${r.roll} — ${r.name} — Class: ${classText}`;
-        ul.appendChild(li);
-    });
+    const allRecs = await loadAttendance();
+    const recs=allRecs.filter(r=>r.roll===roll).sort((a,b) => b.ts - a.ts).slice(0, 10); // Sort by timestamp (newest first)
+    const ul=document.getElementById(ulId); ul.innerHTML='';
+    if(recs.length===0){
+        const li=document.createElement('li');
+        li.textContent='No attendance records found for this roll.';
+        ul.appendChild(li);
+        return;
+    }
+    recs.forEach(r=>{
+        const classText=r.class||'N/A';
+        const li=document.createElement('li');
+        li.textContent=`${r.date} — ${r.roll} — ${r.name} — Class: ${classText}`;
+        ul.appendChild(li);
+    });
 }
 
-// ---------- Students & Attendance Rendering (Refactored for IndexedDB) ----------
+// ---------- Students & Attendance Rendering (Kept the same) ----------
 async function renderStudents(){
-    const ul=document.getElementById('stuList'); ul.innerHTML='';
-    const students = await loadStudents();
-    students.sort((a,b) => a.roll.localeCompare(b.roll));
-    students.forEach(s=>{
-        const li=document.createElement('li');
-        li.textContent=`Roll: ${s.roll} — Name: ${s.name} — Class: ${s.class||'N/A'}`; 
-        ul.appendChild(li);
-    });
+    const ul=document.getElementById('stuList'); ul.innerHTML='';
+    const students = await loadStudents();
+    students.sort((a,b) => a.roll.localeCompare(b.roll));
+    students.forEach(s=>{
+        const faceStatus = s.descriptors && s.descriptors.length > 0 ? ' (Face Registered)' : ' (NO FACE DATA)';
+        const li=document.createElement('li');
+        li.textContent=`Roll: ${s.roll} — Name: ${s.name} — Class: ${s.class||'N/A'}${faceStatus}`; 
+        ul.appendChild(li);
+    });
 }
 
 async function renderAttendance(){
-    const ul=document.getElementById('attList'); ul.innerHTML='';
-    const records = await loadAttendance();
-    records.sort((a,b) => b.ts - a.ts); // Sort by timestamp (newest first)
-    const displayRecords = records.slice(0, 100); // Show last 100 records for performance
-    displayRecords.forEach(r=>{
-        const classText=r.class||'N/A';
-        const ts = new Date(r.ts).toLocaleTimeString();
-        const li=document.createElement('li');
-        li.textContent=`${r.date} ${ts} — Roll: ${r.roll} — Name: ${r.name} — Class: ${classText}`;
-        ul.appendChild(li);
-    });
+    const ul=document.getElementById('attList'); ul.innerHTML='';
+    const records = await loadAttendance();
+    records.sort((a,b) => b.ts - a.ts); // Sort by timestamp (newest first)
+    const displayRecords = records.slice(0, 100); // Show last 100 records for performance
+    displayRecords.forEach(r=>{
+        const classText=r.class||'N/A';
+        const ts = new Date(r.ts).toLocaleTimeString();
+        const li=document.createElement('li');
+        li.textContent=`${r.date} ${ts} — Roll: ${r.roll} — Name: ${r.name} — Class: ${classText}`;
+        ul.appendChild(li);
+    });
 }
 
-// ---------- CSV Utility (Remains the same) ----------
-function downloadCSV(data,filename){ 
-    const blob=new Blob([data],{type:'text/csv;charset=utf-8;'}); 
-    const url=URL.createObjectURL(blob); 
-    const a=document.createElement('a'); 
-    a.href=url;a.download=filename;document.body.appendChild(a);
-    a.click(); 
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url); 
+// ---------- CSV Utility (Kept the same) ----------
+function downloadCSV(data,filename){ 
+    const blob=new Blob([data],{type:'text/csv;charset=utf-8;'}); 
+    const url=URL.createObjectURL(blob); 
+    const a=document.createElement('a'); 
+    a.href=url;a.download=filename;document.body.appendChild(a);
+    a.click(); 
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url); 
 }
 
-function escapeCsv(val){ 
-    if(val==null) return ''; 
-    let str = String(val);
-    if(str.includes(',') || str.includes('"') || str.includes('\n')) {
-        return `"${str.replace(/"/g,'""')}"`; 
-    }
-    return str; 
+function escapeCsv(val){ 
+    if(val==null) return ''; 
+    let str = String(val);
+    if(str.includes(',') || str.includes('"') || str.includes('\n')) {
+        return `"${str.replace(/"/g,'""')}"`; 
+    }
+    return str; 
 }
 
-// ---------- CSV Exports (Refactored for IndexedDB) ----------
+// ---------- CSV Exports (Kept the same) ----------
 document.getElementById('exportStudents').addEventListener('click',async ()=>{
-    const stu=await loadStudents(); 
-    let csv="roll,name,class\n";
-    stu.forEach(s=>{csv+=`${escapeCsv(s.roll)},${escapeCsv(s.name)},${escapeCsv(s.class)}\n`;}); 
-    downloadCSV(csv,"students.csv");
+    const stu=await loadStudents(); 
+    // Do NOT export the face descriptors!
+    let csv="roll,name,class\n";
+    stu.forEach(s=>{csv+=`${escapeCsv(s.roll)},${escapeCsv(s.name)},${escapeCsv(s.class)}\n`;}); 
+    downloadCSV(csv,"students.csv");
 });
 
 document.getElementById('exportRawAttendance').addEventListener('click',async ()=>{
-    const recs=await loadAttendance(); 
-    let csv="roll,name,class,timestamp,date\n";
-    recs.forEach(r=>{csv+=`${escapeCsv(r.roll)},${escapeCsv(r.name)},${escapeCsv(r.class||'N/A')},${r.ts},${r.date}\n`;}); 
-    downloadCSV(csv,"attendance_raw.csv");
+    const recs=await loadAttendance(); 
+    let csv="roll,name,class,timestamp,date\n";
+    recs.forEach(r=>{csv+=`${escapeCsv(r.roll)},${escapeCsv(r.name)},${escapeCsv(r.class||'N/A')},${r.ts},${r.date}\n`;}); 
+    downloadCSV(csv,"attendance_raw.csv");
 });
 
-// ---------- Database Backup (New Functionality) ----------
+// ---------- Database Backup (Modified for descriptors) ----------
 document.getElementById('backupDB').addEventListener('click',async ()=>{
-    try {
-        const students = await loadStudents();
-        const attendance = await loadAttendance();
-        const workingDays = loadWorkingDays();
-        
-        const backupData = {
-            timestamp: Date.now(),
-            students: students,
-            attendance: attendance,
-            workingDays: workingDays,
-            version: DB_VERSION
-        };
-        
-        const json = JSON.stringify(backupData, null, 2);
-        const blob = new Blob([json], {type: 'application/json'});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        const dateStr = new Date().toISOString().slice(0, 10);
-        a.href = url;
-        a.download = `attendance_db_backup_${dateStr}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        alert('Database backup successful!');
-    } catch (e) {
-        console.error("Backup failed:", e);
-        alert('Database backup failed. Check console for details.');
-    }
+    try {
+        const students = await loadStudents();
+        const attendance = await loadAttendance();
+        const workingDays = loadWorkingDays();
+        
+        // Descriptors will be included in the backup
+        const backupData = {
+            timestamp: Date.now(),
+            students: students,
+            attendance: attendance,
+            workingDays: workingDays,
+            version: DB_VERSION
+        };
+        
+        const json = JSON.stringify(backupData, null, 2);
+        const blob = new Blob([json], {type: 'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const dateStr = new Date().toISOString().slice(0, 10);
+        a.href = url;
+        a.download = `attendance_db_backup_${dateStr}_FR.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        alert('Database backup successful! Face descriptors are included.');
+    } catch (e) {
+        console.error("Backup failed:", e);
+        alert('Database backup failed. Check console for details.');
+    }
 });
 
-// ---------- CSV Import (Refactored for IndexedDB) ----------
+// ---------- CSV Import (Kept the same logic but needs roll, name, class) ----------
 document.getElementById('importCSV').addEventListener('change',e=>{
-    const file=e.target.files[0]; 
-    if(!file) return;
-    const reader=new FileReader(); 
-    reader.onload=ev=>importCSV(ev.target.result); 
-    reader.readAsText(file);
+    const file=e.target.files[0]; 
+    if(!file) return;
+    const reader=new FileReader(); 
+    reader.onload=ev=>importCSV(ev.target.result); 
+    reader.readAsText(file);
 });
 
 async function importCSV(text){
-    const lines=(text||'').trim().split(/\r?\n/);
-    const students = await loadStudents(); // Get current list for duplicate check
-    let importedCount = 0;
-    
-    // Simple CSV parser that handles quoted fields (basic)
-    function parseCsvLine(line) {
-        const result = [];
-        let inQuotes = false;
-        let field = '';
-        for (let i = 0; i < line.length; i++) {
-            const char = line[i];
-            if (char === '"' && line[i + 1] === '"' && inQuotes) {
-                field += '"';
-                i++; // Skip the next quote
-            } else if (char === '"') {
-                inQuotes = !inQuotes;
-            } else if (char === ',' && !inQuotes) {
-                result.push(field);
-                field = '';
-            } else {
-                field += char;
-            }
-        }
-        result.push(field); // Push the last field
-        return result.map(s => s.trim().replace(/^"|"$/g, '')); // Trim and remove outer quotes
-    }
+    const lines=(text||'').trim().split(/\r?\n/);
+    const students = await loadStudents(); 
+    let importedCount = 0;
+    
+    // Simple CSV parser that handles quoted fields (basic) - KEPT SAME
+    function parseCsvLine(line) {
+        const result = [];
+        let inQuotes = false;
+        let field = '';
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            if (char === '"' && line[i + 1] === '"' && inQuotes) {
+                field += '"';
+                i++; 
+            } else if (char === '"') {
+                inQuotes = !inQuotes;
+            } else if (char === ',' && !inQuotes) {
+                result.push(field);
+                field = '';
+            } else {
+                field += char;
+            }
+        }
+        result.push(field); 
+        return result.map(s => s.trim().replace(/^"|"$/g, '')); 
+    }
 
-    for(let i=0;i<lines.length;i++){
-        const line=lines[i].trim();
-        if(!line) continue;
-        const cols=parseCsvLine(line);
-        
-        if(cols.length<2) continue;
-        
-        // Skip header row if it looks like one
-        if(i===0 && /^roll$/i.test(cols[0])) continue; 
-        
-        const roll=(cols[0]||'').trim();
-        const name=(cols[1]||'').trim();
-        const cls=(cols[2]||'N/A').trim();
-        
-        // Only import if roll and name are present AND roll doesn't exist already
-        if(roll && name && !students.find(s=>s.roll===roll)){
-            try {
-                await saveStudent({roll,name,class:cls});
-                importedCount++;
-            } catch (e) {
-                console.error(`Failed to import student ${roll}:`, e);
-            }
-        }
-    }
-    
-    renderStudents();
-    alert(`Successfully imported ${importedCount} new students.`);
-    document.getElementById('importCSV').value = ''; // Clear file input
+    for(let i=0;i<lines.length;i++){
+        const line=lines[i].trim();
+        if(!line) continue;
+        const cols=parseCsvLine(line);
+        
+        if(cols.length<2) continue;
+        
+        if(i===0 && /^roll$/i.test(cols[0])) continue; 
+        
+        const roll=(cols[0]||'').trim();
+        const name=(cols[1]||'').trim();
+        const cls=(cols[2]||'N/A').trim();
+        
+        if(roll && name && !students.find(s=>s.roll===roll)){
+            try {
+                // IMPORTANT: New students imported from CSV will NOT have face data.
+                await saveStudent({roll,name,class:cls, descriptors:[]});
+                importedCount++;
+            } catch (e) {
+                console.error(`Failed to import student ${roll}:`, e);
+            }
+        }
+    }
+    
+    renderStudents();
+    alert(`Successfully imported ${importedCount} new students. (Note: Imported students require face registration)`);
+    document.getElementById('importCSV').value = ''; 
 }
 
-// ---------- Reports (Refactored for IndexedDB) ----------
+// ---------- Reports (Kept the same) ----------
 async function calculateReport(){
-    const recs=await loadAttendance();
-    const students = await loadStudents();
-    const workingDaysInput=parseInt(document.getElementById('workingDays').value)||0;
-    saveWorkingDays(workingDaysInput);
-    
-    const studentReport={},classReport={};
-    const studentsMap = students.reduce((map, s) => {
-        map[s.roll] = {name: s.name, class: s.class || 'N/A'};
-        return map;
-    }, {});
+    const recs=await loadAttendance();
+    const students = await loadStudents();
+    const workingDaysInput=parseInt(document.getElementById('workingDays').value)||0;
+    saveWorkingDays(workingDaysInput);
+    
+    const studentReport={},classReport={};
+    const studentsMap = students.reduce((map, s) => {
+        map[s.roll] = {name: s.name, class: s.class || 'N/A'};
+        return map;
+    }, {});
 
 
-    recs.forEach(r=>{
-        // Use the student list as the primary source of name/class info
-        const studentInfo = studentsMap[r.roll] || {name: r.name, class: r.class || 'N/A'}; 
-        const d=new Date(r.date);
-        const monthKey=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-        const stuKey=`${r.roll}|${monthKey}`;
-        
-        if(!studentReport[stuKey]) studentReport[stuKey]={roll:r.roll,name:studentInfo.name,class:studentInfo.class,month:monthKey,days:new Set()};
-        studentReport[stuKey].days.add(r.date);
-    });
+    recs.forEach(r=>{
+        const studentInfo = studentsMap[r.roll] || {name: r.name, class: r.class || 'N/A'}; 
+        const d=new Date(r.date);
+        const monthKey=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+        const stuKey=`${r.roll}|${monthKey}`;
+        
+        if(!studentReport[stuKey]) studentReport[stuKey]={roll:r.roll,name:studentInfo.name,class:studentInfo.class,month:monthKey,days:new Set()};
+        studentReport[stuKey].days.add(r.date);
+    });
 
-    const studentRows=[];
-    for(const k in studentReport){
-        const item=studentReport[k];
-        const parts=item.month.split('-').map(Number);
-        
-        let totalDays = workingDaysInput;
-        // If working days is 0 or not set, calculate total days in month
-        if(workingDaysInput === 0) {
-            totalDays = new Date(parts[0], parts[1], 0).getDate();
-        }
-        
-        const attended=item.days.size;
-        const perc=totalDays>0 ? ((attended/totalDays)*100).toFixed(1) : '0.0';
-        studentRows.push({roll:item.roll,name:item.name,class:item.class,month:item.month,attended:attended,totalDays:totalDays,perc:perc});
-    }
+    const studentRows=[];
+    for(const k in studentReport){
+        const item=studentReport[k];
+        const parts=item.month.split('-').map(Number);
+        
+        let totalDays = workingDaysInput;
+        if(workingDaysInput === 0) {
+            totalDays = new Date(parts[0], parts[1], 0).getDate();
+        }
+        
+        const attended=item.days.size;
+        const perc=totalDays>0 ? ((attended/totalDays)*100).toFixed(1) : '0.0';
+        studentRows.push({roll:item.roll,name:item.name,class:item.class,month:item.month,attended:attended,totalDays:totalDays,perc:perc});
+    }
 
-    studentRows.forEach(r=>{
-        const key=`${r.class}|${r.month}`;
-        if(!classReport[key]) classReport[key]={class:r.class,month:r.month,totalStudents:0,totalDays:r.totalDays,totalAttendance:0, uniqueStudents: new Set()};
-        
-        // Count unique students per month/class
-        if (!classReport[key].uniqueStudents.has(r.roll)) {
-            classReport[key].totalStudents+=1;
-            classReport[key].uniqueStudents.add(r.roll);
-        }
-        classReport[key].totalAttendance+=r.attended;
-    });
+    studentRows.forEach(r=>{
+        const key=`${r.class}|${r.month}`;
+        if(!classReport[key]) classReport[key]={class:r.class,month:r.month,totalStudents:0,totalDays:r.totalDays,totalAttendance:0, uniqueStudents: new Set()};
+        
+        if (!classReport[key].uniqueStudents.has(r.roll)) {
+            classReport[key].totalStudents+=1;
+            classReport[key].uniqueStudents.add(r.roll);
+        }
+        classReport[key].totalAttendance+=r.attended;
+    });
 
-    const classRows=[];
-    for(const k in classReport){
-        const c=classReport[k];
-        const maxPossible=c.totalStudents*c.totalDays;
-        const perc=maxPossible>0 ? ((c.totalAttendance/maxPossible)*100).toFixed(1) : '0.0';
-        classRows.push({class:c.class,month:c.month,totalStudents:c.totalStudents,totalDays:c.totalDays,totalAttendance:c.totalAttendance,perc:perc});
-    }
+    const classRows=[];
+    for(const k in classReport){
+        const c=classReport[k];
+        const maxPossible=c.totalStudents*c.totalDays;
+        const perc=maxPossible>0 ? ((c.totalAttendance/maxPossible)*100).toFixed(1) : '0.0';
+        classRows.push({class:c.class,month:c.month,totalStudents:c.totalStudents,totalDays:c.totalDays,totalAttendance:c.totalAttendance,perc:perc});
+    }
 
-    return {studentRows,classRows};
+    return {studentRows,classRows};
 }
 
 document.getElementById('genReport').addEventListener('click',async ()=>{
-    try {
-        const {studentRows,classRows}=await calculateReport();
-        
-        // --- Render Student Report ---
-        const tbody=document.querySelector('#reportTable tbody'); tbody.innerHTML='';
-        if(studentRows.length === 0){
-             tbody.innerHTML = '<tr><td colspan="7">No data available to generate student reports.</td></tr>';
-        } else {
-            studentRows.forEach(r=>{
-                const tr=document.createElement('tr');
-                tr.innerHTML=`<td>${r.roll}</td><td>${r.name}</td><td>${r.class}</td><td>${r.month}</td><td>${r.attended}</td><td>${r.totalDays}</td><td>${r.perc}%</td>`;
-                tbody.appendChild(tr);
-            });
-        }
+    try {
+        const {studentRows,classRows}=await calculateReport();
+        
+        // --- Render Student Report ---
+        const tbody=document.querySelector('#reportTable tbody'); tbody.innerHTML='';
+        if(studentRows.length === 0){
+             tbody.innerHTML = '<tr><td colspan="7">No data available to generate student reports.</td></tr>';
+        } else {
+            studentRows.forEach(r=>{
+                const tr=document.createElement('tr');
+                tr.innerHTML=`<td>${r.roll}</td><td>${r.name}</td><td>${r.class}</td><td>${r.month}</td><td>${r.attended}</td><td>${r.totalDays}</td><td>${r.perc}%</td>`;
+                tbody.appendChild(tr);
+            });
+        }
 
-        // --- Render Class Report ---
-        const tbody2=document.querySelector('#classReportTable tbody'); tbody2.innerHTML='';
-        if(classRows.length === 0){
-             tbody2.innerHTML = '<tr><td colspan="6">No data available to generate class reports.</td></tr>';
-        } else {
-            classRows.forEach(c=>{
-                const tr=document.createElement('tr');
-                tr.innerHTML=`<td>${c.class}</td><td>${c.month}</td><td>${c.totalStudents}</td><td>${c.totalDays}</td><td>${c.totalAttendance}</td><td>${c.perc}%\t</td>`;
-                tbody2.appendChild(tr);
-            });
-        }
-    } catch (e) {
-        console.error("Report generation failed:", e);
-        alert("Failed to generate report due to a database error.");
-    }
+        // --- Render Class Report ---
+        const tbody2=document.querySelector('#classReportTable tbody'); tbody2.innerHTML='';
+        if(classRows.length === 0){
+             tbody2.innerHTML = '<tr><td colspan="6">No data available to generate class reports.</td></tr>';
+        } else {
+            classRows.forEach(c=>{
+                const tr=document.createElement('tr');
+                tr.innerHTML=`<td>${c.class}</td><td>${c.month}</td><td>${c.totalStudents}</td><td>${c.totalDays}</td><td>${c.totalAttendance}</td><td>${c.perc}%\t</td>`;
+                tbody2.appendChild(tr);
+            });
+        }
+    } catch (e) {
+        console.error("Report generation failed:", e);
+        alert("Failed to generate report due to a database error.");
+    }
 });
 
 document.getElementById('exportStudentReport').addEventListener('click',async ()=>{
-    const {studentRows}=await calculateReport(); 
-    let csv="roll,name,class,month,attended,totalDays,percentage\n";
-    studentRows.forEach(r=>{csv+=`${escapeCsv(r.roll)},${escapeCsv(r.name)},${escapeCsv(r.class)},${r.month},${r.attended},${r.totalDays},${r.perc}%\n`;});
-    downloadCSV(csv,"student_report.csv");
+    const {studentRows}=await calculateReport(); 
+    let csv="roll,name,class,month,attended,totalDays,percentage\n";
+    studentRows.forEach(r=>{csv+=`${escapeCsv(r.roll)},${escapeCsv(r.name)},${escapeCsv(r.class)},${r.month},${r.attended},${r.totalDays},${r.perc}%\n`;});
+    downloadCSV(csv,"student_report.csv");
 });
 
 document.getElementById('exportClassReport').addEventListener('click',async ()=>{
-    const {classRows}=await calculateReport(); 
-    let csv="class,month,totalStudents,totalDays,totalAttendance,percentage\n";
-    classRows.forEach(c=>{csv+=`${escapeCsv(c.class)},${c.month},${c.totalStudents},${c.totalDays},${c.totalAttendance},${c.perc}%\n`;});
-    downloadCSV(csv,"class_report.csv");
+    const {classRows}=await calculateReport(); 
+    let csv="class,month,totalStudents,totalDays,totalAttendance,percentage\n";
+    classRows.forEach(c=>{csv+=`${escapeCsv(c.class)},${c.month},${c.totalStudents},${c.totalDays},${c.totalAttendance},${c.perc}%\n`;});
+    downloadCSV(csv,"class_report.csv");
 });
 
 // --- END OF JAVASCRIPT ---
