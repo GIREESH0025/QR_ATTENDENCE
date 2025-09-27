@@ -600,7 +600,8 @@ function loadWorkingDays(){ return parseInt(localStorage.getItem('workingDays')|
 openDB().catch(e => console.error("Database initialization failed:", e));
 
 // ---------- Face Recognition Setup ----------
-const MODEL_URL = 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/models';
+// FIX: Updated MODEL_URL to a reliable Face-API CDN path
+const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
 let faceMatcher = null;
 const startScanBtn = document.getElementById('startScan');
 const scanResultDiv = document.getElementById('scanResult');
