@@ -4,35 +4,36 @@
 <meta charset="UTF-8">
 <title>QR Attendance System</title>
 <style>
-body { font-family: 'Segoe UI', Tahoma, sans-serif; margin:0; padding:0; background:#f4f6f8; color:#333; }
+body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin:0; padding:0; background:#f4f6f8; color:#333; }
 h1,h2,h3{text-align:center;color:#222;}
 h1{margin-top:20px;font-size:2rem;}
 h2{margin-top:10px;font-size:1.5rem;}
 h3{margin-top:20px;font-size:1.2rem;}
 nav{display:flex;justify-content:center;flex-wrap:wrap;margin:20px 0;gap:8px;}
-nav button{padding:10px 18px;border:none;border-radius:8px;background:#007bff;color:#fff;font-size:14px;cursor:pointer;transition:0.3s;}
+nav button{padding:10px 18px;border:none;border-radius:8px;background:#007bff;color:#fff;font-size:14px;cursor:pointer;transition:background 0.3s,transform 0.2s;}
 nav button:hover{background:#0056b3;transform:translateY(-2px);}
-.tab{display:none;max-width:950px;margin:0 auto 40px;padding:20px;background:#fff;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.1);}
+.tab{display:none;max-width:900px;margin:0 auto 40px;padding:20px;background:#fff;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.1);}
 .active{display:block;}
 label{display:block;margin:10px 0 5px;font-weight:600;}
-input,select{width:100%; max-width:300px; padding:8px 10px; border-radius:6px; border:1px solid #ccc; margin-bottom:10px;}
+input[type="text"], input[type="number"], input[type="file"]{width:100%; max-width:300px; padding:8px 10px; border-radius:6px; border:1px solid #ccc; margin-bottom:10px;}
 #qrCanvas{display:block;margin:15px auto;border:2px solid #007bff;border-radius:8px;}
 #downloadBtn{display:inline-block;margin:10px auto;padding:8px 12px;background:#28a745;color:#fff;border-radius:6px;text-decoration:none;font-weight:600;transition:background 0.3s;}
 #downloadBtn:hover{background:#218838;}
 #genStatus{text-align:center;margin-top:10px;font-size:14px;}
-#preview{display:block;margin:0 auto 10px;border-radius:8px;border:1px solid #ccc;}
+#preview{display:block;margin:0 auto 10px;border-radius:8px;}
 #scanControls{text-align:center;margin-bottom:10px;}
 #scanControls button{padding:8px 14px;margin:5px;border-radius:6px;border:none;background:#007bff;color:#fff;font-weight:600;}
-#scanResult{text-align:center;font-weight:700;margin:10px 0;font-size:15px;}
-#scanHistory{max-width:500px;margin:0 auto;list-style:none;padding:0;}
-#scanHistory li{background:#f1f3f5;margin:4px 0;padding:6px 12px;border-radius:6px;font-size:14px;}
-button[id^="export"],#genReport,#markManual{display:inline-block;margin:5px;padding:8px 14px;border:none;border-radius:6px;background:#17a2b8;color:#fff;font-weight:600;transition:background 0.3s;}
-button[id^="export"]:hover,#genReport:hover,#markManual:hover{background:#138496;}
-table{border-collapse:collapse;margin:15px auto;width:90%;max-width:800px;}
-th,td{border:1px solid #ccc;padding:8px;text-align:center;}
+#scanResult{text-align:center;font-weight:600;margin:10px 0;font-size:15px;}
+#scanHistory, #manualHistory{max-width:500px;margin:0 auto;list-style:none;padding:0;}
+#scanHistory li, #manualHistory li{background:#f1f3f5;margin:4px 0;padding:6px 12px;border-radius:6px;font-size:14px;}
+table{width:100%;max-width:900px;margin:10px auto 20px;border-collapse:collapse;box-shadow:0 2px 8px rgba(0,0,0,0.05);border-radius:8px;overflow:hidden;}
+th,td{padding:10px 12px;text-align:center;}
 th{background:#007bff;color:#fff;}
-.small-muted{font-size:13px;color:#666;text-align:center;margin-top:6px;}
-@media(max-width:600px){nav{flex-direction:column;align-items:center;}input,button,select{width:90%;max-width:300px;}table,canvas{width:90%;}}
+tbody tr:nth-child(even){background:#f8f9fa;}
+tbody tr:hover{background:#d1ecf1;cursor:pointer;}
+button[id^="export"],#genReport{display:inline-block;margin:5px;padding:8px 14px;border:none;border-radius:6px;background:#17a2b8;color:#fff;font-weight:600;transition:background 0.3s;}
+button[id^="export"]:hover,#genReport:hover{background:#138496;}
+@media(max-width:600px){nav{flex-direction:column;align-items:center;}input[type="text"],input[type="number"],input[type="file"],button[id^="export"],#genReport{width:90%;max-width:300px;}table,canvas{width:90%;}}
 </style>
 </head>
 <body>
@@ -49,237 +50,374 @@ th{background:#007bff;color:#fff;}
 
 <!-- Generate QR -->
 <div id="gen" class="tab">
-  <h2>Generate QR Code</h2>
-  <label>Roll: <input id="genRoll" type="text" placeholder="e.g. 101"></label>
-  <label>Name: <input id="genName" type="text" placeholder="Student Name"></label>
-  <label>Class: <input id="genClass" type="text" placeholder="Class/Section"></label>
-  <button id="genBtn">Generate</button>
-  <canvas id="qrCanvas" width="450" height="450"></canvas>
-  <a id="downloadBtn" style="display:none">Download QR</a>
-  <div id="genStatus"></div>
+<h2>Generate QR Code</h2>
+<label>Roll: <input id="genRoll" type="text"></label>
+<label>Name: <input id="genName" type="text"></label>
+<label>Class: <input id="genClass" type="text"></label>
+<button id="genBtn">Generate</button>
+<canvas id="qrCanvas" width="450" height="450"></canvas>
+<a id="downloadBtn" style="display:none">Download QR</a>
+<div id="genStatus"></div>
 </div>
 
 <!-- Scan QR -->
 <div id="scan" class="tab">
-  <h2>Scan QR Code</h2>
-  <video id="preview" width="320" height="240" playsinline></video>
-  <div id="scanControls">
-    <button id="startScan">Start Scan</button>
-    <button id="stopScan">Stop Scan</button>
-  </div>
-  <div id="scanResult">Scanner stopped.</div>
-  <div class="small-muted">✅ / ❌ messages will appear here, and voice will confirm.</div>
-  <h3>Attendance History</h3>
-  <ul id="scanHistory"></ul>
+<h2>Scan QR Code</h2>
+<video id="preview" width="300" height="200" style="border:1px solid #ccc"></video>
+<div id="scanControls">
+  <button id="startScan">Start Scan</button>
+  <button id="stopScan">Stop Scan</button>
+</div>
+<div id="scanResult"></div>
+<h3>Attendance History for Scanned Student</h3>
+<ul id="scanHistory"></ul>
 </div>
 
 <!-- Manual Attendance -->
 <div id="manual" class="tab">
-  <h2>Manual Attendance</h2>
-  <label>Select Student:
-    <select id="manualStudent"></select>
-  </label>
-  <label>Select Date:
-    <input type="date" id="manualDate">
-  </label>
-  <button id="markManual">Mark Present</button>
-  <div id="manualStatus"></div>
+<h2>Manual Attendance</h2>
+<label>Enter Roll Number: <input type="text" id="manualRoll"></label>
+<button id="markManual">Mark Attendance</button>
+<div id="manualResult"></div>
+<h3>Manual Attendance History</h3>
+<ul id="manualHistory"></ul>
 </div>
 
 <!-- Students -->
 <div id="students" class="tab">
-  <h2>Students List</h2>
-  <button id="exportStudents">Export Students CSV</button>
-  <table id="studentTable"><thead><tr><th>Roll</th><th>Name</th><th>Class</th></tr></thead><tbody></tbody></table>
+<h2>Students</h2>
+<input type="file" id="importCSV" accept=".csv">
+<button id="exportStudents">Export Students CSV</button>
+<ul id="stuList"></ul>
 </div>
 
 <!-- Attendance -->
 <div id="attendance" class="tab">
-  <h2>Attendance Records</h2>
-  <button id="exportAttendance">Export Attendance CSV</button>
-  <table id="attendanceTable"><thead><tr><th>Date</th><th>Roll</th><th>Name</th><th>Class</th><th>Manual?</th></tr></thead><tbody></tbody></table>
+<h2>Attendance Records</h2>
+<button id="exportRawAttendance">Export Raw Attendance CSV</button>
+<button id="exportStudentReport">Export Student Report CSV</button>
+<button id="exportClassReport">Export Class Report CSV</button>
+<ul id="attList"></ul>
 </div>
 
 <!-- Reports -->
 <div id="reports" class="tab">
-  <h2>Attendance Reports</h2>
-  <button id="genReport">Generate Report</button>
-  <div id="reportArea"></div>
+<h2>Monthly Attendance Report</h2>
+<label>Enter Working Days for Percentage Calculation: <input type="number" id="workingDays" placeholder="e.g. 22"></label>
+<button id="genReport">Generate Report</button>
+
+<h3>Student-wise Report</h3>
+<table id="reportTable">
+<thead>
+<tr>
+<th>Roll</th><th>Name</th><th>Class</th><th>Month</th>
+<th>Days Attended</th><th>Total Days</th><th>%</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
+<h3>Class-wise Report</h3>
+<table id="classReportTable">
+<thead>
+<tr>
+<th>Class</th><th>Month</th><th>Total Students</th>
+<th>Total Days</th><th>Total Attendance</th><th>%</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/qrious/dist/qrious.min.js"></script>
 <script src="https://unpkg.com/@zxing/library@latest"></script>
 <script>
-// ---- Storage ----
-function loadStudents(){ return JSON.parse(localStorage.getItem('students')||'[]'); }
-function saveStudents(d){ localStorage.setItem('students',JSON.stringify(d)); }
-function loadAttendance(){ return JSON.parse(localStorage.getItem('attendance')||'[]'); }
-function saveAttendance(d){ localStorage.setItem('attendance',JSON.stringify(d)); }
+// ---------- Storage ----------
+function loadStudents(){ try { return JSON.parse(localStorage.getItem('students')||'[]'); } catch(e){ return []; } }
+function saveStudents(data){ localStorage.setItem('students',JSON.stringify(data)); }
+function loadAttendance(){ try { return JSON.parse(localStorage.getItem('attendance')||'[]'); } catch(e){ return []; } }
+function saveAttendance(data){ localStorage.setItem('attendance',JSON.stringify(data)); }
+function loadWorkingDays(){ return parseInt(localStorage.getItem('workingDays')||'0'); }
+function saveWorkingDays(val){ localStorage.setItem('workingDays',val); }
 
-// ---- Speech ----
-function speak(msg){
-  if('speechSynthesis' in window){
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(msg);
-    u.lang = "en-IN";
-    window.speechSynthesis.speak(u);
-  }
-}
-
-// ---- QR Generation ----
-const qrCanvas=document.getElementById("qrCanvas");
-let qrious=new QRious({element:qrCanvas,size:450});
-document.getElementById("genBtn").onclick=()=>{
-  const roll=document.getElementById("genRoll").value.trim();
-  const name=document.getElementById("genName").value.trim()||"Unknown";
-  const cls=document.getElementById("genClass").value.trim()||"N/A";
-  if(!roll){alert("Enter roll");return;}
-  const payload=`ATT|${roll}|${name}|${cls}`;
-  qrious.set({value:payload});
-  const dl=document.getElementById("downloadBtn");
-  dl.href=qrCanvas.toDataURL("image/png");
-  dl.download=`qr_${roll}.png`; dl.style.display="inline-block";
-  document.getElementById("genStatus").textContent=`✔ QR generated for ${name} (${roll})`;
-  const st=loadStudents(); if(!st.find(s=>s.roll===roll)){st.push({roll,name,class:cls});saveStudents(st);renderStudents();renderManual();}
-};
-
-// ---- Scanner ----
-let codeReader=null, activeStream=null, last="";
-document.getElementById("startScan").onclick=async()=>{
-  if(!codeReader) codeReader=new ZXing.BrowserQRCodeReader();
-  if(activeStream) activeStream.getTracks().forEach(t=>t.stop());
-  activeStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
-  preview.srcObject=activeStream; preview.play();
-  codeReader.decodeFromVideoDevice(null, preview,(res,err)=>{
-    if(res){
-      const text=res.text;
-      if(text!==last){ last=text; handleScan(text); setTimeout(()=>last="",2000); }
-    }
+// ---------- Tabs ----------
+document.querySelectorAll('nav button').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.getElementById(btn.dataset.tab).classList.add('active');
+    if(btn.dataset.tab==='students') renderStudents();
+    if(btn.dataset.tab==='attendance') renderAttendance();
   });
-  document.getElementById("scanResult").textContent="Scanning...";
-};
-document.getElementById("stopScan").onclick=()=>{
-  if(codeReader) codeReader.reset();
-  if(activeStream) activeStream.getTracks().forEach(t=>t.stop());
-  preview.pause(); preview.srcObject=null;
-  document.getElementById("scanResult").textContent="Scanner stopped.";
-};
+});
+document.querySelector('nav button').click(); // default
 
-function handleScan(payload){
-  let roll="",name="Unknown",cls="N/A";
-  try{
-    const parts=payload.split("|");
-    if(parts[0]==="ATT"){roll=parts[1];name=parts[2];cls=parts[3];}
-  }catch{}
-  if(!roll){
-    document.getElementById("scanResult").textContent="❌ Invalid QR - Attendance not marked";
-    speak("Attendance not marked, invalid QR");
+// ---------- Generate QR ----------
+const genBtn=document.getElementById('genBtn');
+const qrCanvas=document.getElementById('qrCanvas');
+const downloadBtn=document.getElementById('downloadBtn');
+const status=document.getElementById('genStatus');
+let qr=null;
+
+genBtn.addEventListener('click',()=>{
+  const roll=document.getElementById('genRoll').value.trim();
+  let name=document.getElementById('genName').value.trim();
+  let cls=document.getElementById('genClass').value.trim();
+  if(!roll){ alert('Enter roll'); return; }
+  if(!name) name="Unknown";
+  if(!cls) cls="N/A";
+
+  const stuList=loadStudents();
+  if(stuList.find(s=>s.roll===roll)){
+    status.innerHTML=`<small style="color:red">❌ QR already generated for: ${roll}</small>`;
     return;
   }
+  stuList.push({roll,name,class:cls});
+  saveStudents(stuList);
+
+  const payload=`ATT|${roll}|${name}|${cls}`;
+
+  const ctx = qrCanvas.getContext('2d');
+  ctx.clearRect(0,0,qrCanvas.width,qrCanvas.height);
+
+  qr = new QRious({
+    element: qrCanvas,
+    value: payload,
+    size: 450,
+    level: 'H',
+    background: 'white',
+    foreground: 'black'
+  });
+
+  downloadBtn.href=qrCanvas.toDataURL('image/png');
+  downloadBtn.download=`qr_${roll}.png`;
+  downloadBtn.style.display='inline-block';
+  status.innerHTML=`<small style="color:green">✔ QR generated: <code>${payload}</code></small>`;
+});
+
+// ---------- Scanner ----------
+let codeReader=null,activeStream=null,lastScanned="";
+document.getElementById('startScan').addEventListener('click',async()=>{
+  if(!codeReader) codeReader=new ZXing.BrowserQRCodeReader();
+  const preview=document.getElementById('preview');
+  try{
+    if(activeStream){ activeStream.getTracks().forEach(track=>track.stop()); }
+    activeStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
+    preview.srcObject=activeStream; preview.setAttribute("playsinline",true);
+    await preview.play();
+    codeReader.decodeFromVideoDevice(null,preview,(result,err)=>{
+      if(result){
+        const payload=result.getText();
+        if(payload!==lastScanned){
+          lastScanned=payload;
+          handleScan(payload);
+          setTimeout(()=>{lastScanned="";},2000);
+        }
+      }
+    });
+  }catch(e){ console.error("Camera error:",e); alert("Could not access camera."); }
+});
+document.getElementById('stopScan').addEventListener('click',()=>{
+  if(activeStream){ activeStream.getTracks().forEach(track=>track.stop()); activeStream=null; }
+  document.getElementById('scanResult').textContent="Scan stopped.";
+});
+
+// ---------- Handle Scan + Voice ----------
+function handleScan(payload){
+  let roll = '', name = 'Unknown', cls = 'N/A';
+  const parts = (payload||'').split('|').map(p=>p.trim());
+
+  if(parts.length >= 4 && parts[0].toUpperCase()==='ATT'){
+    roll = parts[1] || '';
+    name = parts[2] || 'Unknown';
+    cls  = parts[3] || 'N/A';
+  } else if(parts.length >= 3){
+    roll = parts[0] || '';
+    name = parts[1] || 'Unknown';
+    cls  = parts[2] || 'N/A';
+  } else if(parts.length === 2){
+    roll = parts[0] || '';
+    name = parts[1] || 'Unknown';
+    cls = 'N/A';
+  } else { roll = payload; name = 'Unknown'; cls = 'N/A'; }
+
+  roll = (roll||'').toString(); name = name || 'Unknown'; cls = cls || 'N/A';
+
+  const recs = loadAttendance();
+  const today = new Date().toISOString().slice(0,10);
+
+  if(recs.find(r=>r.roll===roll && r.date===today)){
+    const msg = `Attendance already marked for ${roll}`;
+    document.getElementById('scanResult').textContent = '❌ ' + msg;
+    speak(msg);
+    showStudentHistory(roll,'scanHistory');
+    return;
+  }
+
+  recs.unshift({roll,name,class:cls,ts:Date.now(),date:today});
+  saveAttendance(recs);
+
+  const msg = `Attendance marked for ${roll}`;
+  document.getElementById('scanResult').textContent = '✅ ' + msg;
+  speak(msg);
+  showStudentHistory(roll,'scanHistory');
+}
+
+// ---------- Manual Attendance ----------
+document.getElementById('markManual').addEventListener('click',()=>{
+  const roll=document.getElementById('manualRoll').value.trim();
+  if(!roll){ alert('Enter roll'); return; }
+  const students=loadStudents();
+  const stu=students.find(s=>s.roll===roll) || {name:'Unknown',class:'N/A'};
   const recs=loadAttendance();
   const today=new Date().toISOString().slice(0,10);
-  if(recs.find(r=>r.roll===roll&&r.date===today)){
-    document.getElementById("scanResult").textContent=`❌ Already marked for ${name} (${roll})`;
-    speak(`Attendance not marked, already marked for ${name}`);
+  if(recs.find(r=>r.roll===roll && r.date===today)){
+    const msg=`Attendance already marked for ${roll}`;
+    document.getElementById('manualResult').textContent='❌ '+msg;
+    speak(msg);
+    showStudentHistory(roll,'manualHistory');
     return;
   }
-  recs.push({roll,name,class:cls,date:today,manual:false});
+  recs.unshift({roll, name:stu.name, class:stu.class, ts:Date.now(), date:today});
   saveAttendance(recs);
-  document.getElementById("scanResult").textContent=`✅ Marked for ${name} (${roll})`;
-  speak(`Attendance marked for ${name}, roll ${roll}`);
-  const li=document.createElement("li"); li.textContent=`${today} - ${name} (${roll})`; document.getElementById("scanHistory").prepend(li);
-  renderAttendance();
-}
-
-// ---- Manual Attendance ----
-function renderManual(){
-  const sel=document.getElementById("manualStudent"); sel.innerHTML="";
-  loadStudents().forEach(s=>{
-    const o=document.createElement("option"); o.value=s.roll; o.textContent=`${s.roll} - ${s.name}`; sel.appendChild(o);
-  });
-  document.getElementById("manualDate").value=new Date().toISOString().slice(0,10);
-}
-document.getElementById("markManual").onclick=()=>{
-  const roll=document.getElementById("manualStudent").value;
-  const date=document.getElementById("manualDate").value;
-  const stu=loadStudents().find(s=>s.roll===roll)||{name:"Unknown"};
-  const recs=loadAttendance();
-  if(recs.find(r=>r.roll===roll&&r.date===date)){
-    document.getElementById("manualStatus").textContent=`❌ Already marked for ${stu.name}`;
-    speak(`Attendance not marked, already marked for ${stu.name}`);
-    return;
-  }
-  recs.push({roll,name:stu.name,class:stu.class,date,manual:true});
-  saveAttendance(recs);
-  document.getElementById("manualStatus").textContent=`✅ Manually marked for ${stu.name}`;
-  speak(`Attendance marked manually for ${stu.name}, roll ${roll}`);
-  renderAttendance();
-};
-
-// ---- Students ----
-function renderStudents(){
-  const tbody=document.querySelector("#studentTable tbody"); tbody.innerHTML="";
-  loadStudents().forEach(s=>{
-    const tr=document.createElement("tr"); tr.innerHTML=`<td>${s.roll}</td><td>${s.name}</td><td>${s.class}</td>`; tbody.appendChild(tr);
-  });
-}
-document.getElementById("exportStudents").onclick=()=>{
-  const s=loadStudents(); let csv="Roll,Name,Class\n";
-  s.forEach(x=>csv+=`${x.roll},${x.name},${x.class}\n`);
-  downloadCSV(csv,"students.csv");
-};
-
-// ---- Attendance ----
-function renderAttendance(){
-  const tbody=document.querySelector("#attendanceTable tbody"); tbody.innerHTML="";
-  loadAttendance().forEach(a=>{
-    const tr=document.createElement("tr"); tr.innerHTML=`<td>${a.date}</td><td>${a.roll}</td><td>${a.name}</td><td>${a.class}</td><td>${a.manual?"Yes":"No"}</td>`; tbody.appendChild(tr);
-  });
-}
-document.getElementById("exportAttendance").onclick=()=>{
-  const a=loadAttendance(); let csv="Date,Roll,Name,Class,Manual\n";
-  a.forEach(x=>csv+=`${x.date},${x.roll},${x.name},${x.class},${x.manual}\n`);
-  downloadCSV(csv,"attendance.csv");
-};
-
-// ---- Reports ----
-document.getElementById("genReport").onclick=()=>{
-  const students=loadStudents(), recs=loadAttendance();
-  if(!students.length){alert("No students");return;}
-  const today=new Date(); const ym=today.toISOString().slice(0,7); // YYYY-MM
-  const daysThisMonth=new Set(recs.filter(r=>r.date.startsWith(ym)).map(r=>r.date)).size||1;
-  let html="<table><thead><tr><th>Roll</th><th>Name</th><th>Present</th><th>Total Days</th><th>%</th></tr></thead><tbody>";
-  let total=0,count=0;
-  students.forEach(s=>{
-    const present=recs.filter(r=>r.roll===s.roll&&r.date.startsWith(ym)).length;
-    const perc=((present/daysThisMonth)*100).toFixed(1);
-    html+=`<tr><td>${s.roll}</td><td>${s.name}</td><td>${present}</td><td>${daysThisMonth}</td><td>${perc}%</td></tr>`;
-    total+=parseFloat(perc); count++;
-  });
-  const classPerc=(total/count).toFixed(1);
-  html+=`</tbody></table><h3>Class Average: ${classPerc}%</h3>`;
-  document.getElementById("reportArea").innerHTML=html;
-};
-
-// ---- Helper ----
-function downloadCSV(content,filename){
-  const blob=new Blob([content],{type:"text/csv"});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement("a"); a.href=url; a.download=filename; a.click();
-  URL.revokeObjectURL(url);
-}
-
-// ---- Tabs ----
-document.querySelectorAll("nav button").forEach(b=>{
-  b.onclick=()=>{
-    document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
-    document.getElementById(b.dataset.tab).classList.add("active");
-    if(b.dataset.tab==="students") renderStudents();
-    if(b.dataset.tab==="attendance") renderAttendance();
-    if(b.dataset.tab==="manual") renderManual();
-  };
+  const msg=`Attendance marked for ${roll}`;
+  document.getElementById('manualResult').textContent='✅ '+msg;
+  speak(msg);
+  showStudentHistory(roll,'manualHistory');
 });
-document.querySelector("nav button").click();
+
+// ---------- Voice ----------
+function speak(text){
+  try{
+    if('speechSynthesis' in window){
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = "en-IN";
+      window.speechSynthesis.speak(utter);
+    }
+  }catch(e){ console.error('Speech error', e); }
+}
+
+// ---------- Show History ----------
+function showStudentHistory(roll,ulId){
+  const recs = loadAttendance().filter(r=>r.roll===roll);
+  const ul=document.getElementById(ulId); ul.innerHTML='';
+  if(recs.length===0){ const li=document.createElement('li'); li.textContent='No attendance records found for this roll.'; ul.appendChild(li); return; }
+  recs.forEach(r=>{
+    const li=document.createElement('li');
+    li.textContent=`${r.date} — ${r.roll} — ${r.name} — Class: ${r.class||'N/A'}`;
+    ul.appendChild(li);
+  });
+}
+
+// ---------- Students & Attendance ----------
+function renderStudents(){
+  const ul=document.getElementById('stuList'); ul.innerHTML='';
+  loadStudents().forEach(s=>{ const li=document.createElement('li'); li.textContent=`${s.roll} — ${s.name} — ${s.class||'N/A'}`; ul.appendChild(li); });
+}
+function renderAttendance(){
+  const ul=document.getElementById('attList'); ul.innerHTML='';
+  loadAttendance().forEach(r=>{ const li=document.createElement('li'); li.textContent=`${r.date} ${new Date(r.ts).toLocaleTimeString()} — ${r.roll} — ${r.name} — Class: ${r.class||'N/A'}`; ul.appendChild(li); });
+}
+
+// ---------- CSV Export/Import ----------
+function downloadCSV(data,filename){ const blob=new Blob([data],{type:'text/csv'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url;a.download=filename;a.click(); URL.revokeObjectURL(url); }
+function escapeCsv(val){ if(val==null) return ''; if(String(val).includes(',') || String(val).includes('"')) return `"${String(val).replace(/"/g,'""')}"`; return String(val); }
+
+document.getElementById('exportStudents').addEventListener('click',()=>{
+  const stu=loadStudents(); let csv="roll,name,class\n"; stu.forEach(s=>{csv+=`${escapeCsv(s.roll)},${escapeCsv(s.name)},${escapeCsv(s.class)}\n`;}); downloadCSV(csv,"students.csv");
+});
+document.getElementById('exportRawAttendance').addEventListener('click',()=>{
+  const recs=loadAttendance(); let csv="roll,name,class,timestamp,date\n"; recs.forEach(r=>{csv+=`${escapeCsv(r.roll)},${escapeCsv(r.name)},${escapeCsv(r.class)},${r.ts},${r.date}\n`;}); downloadCSV(csv,"attendance_raw.csv");
+});
+document.getElementById('importCSV').addEventListener('change',e=>{
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader(); reader.onload=ev=>importCSV(ev.target.result); reader.readAsText(file);
+});
+function importCSV(text){
+  const lines=(text||'').trim().split(/\r?\n/); const stu=loadStudents();
+  for(let i=0;i<lines.length;i++){
+    const line = lines[i].trim(); if(!line) continue;
+    const cols = line.split(','); if(cols.length < 2) continue;
+    if(i===0 && /^roll$/i.test(cols[0].trim())) continue;
+    const roll = (cols[0]||'').trim(); const name = (cols[1]||'').trim(); const cls = (cols[2]||'N/A').trim();
+    if(roll && name && !stu.find(s=>s.roll===roll)) stu.push({roll,name,class:cls});
+  }
+  saveStudents(stu); renderStudents();
+}
+
+// ---------- Reports ----------
+document.getElementById('workingDays').value = loadWorkingDays();
+document.getElementById('workingDays').addEventListener('change',()=>{
+  const val = parseInt(document.getElementById('workingDays').value)||0;
+  saveWorkingDays(val);
+});
+
+function calculateReport(){
+  const recs=loadAttendance();
+  const workingDays=loadWorkingDays()||0;
+  const studentReport={},classReport={};
+
+  recs.forEach(r=>{
+    const d=new Date(r.date);
+    const monthKey = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    const stuKey = `${r.roll}|${monthKey}`;
+    if(!studentReport[stuKey]) studentReport[stuKey]={roll:r.roll,name:r.name,class:r.class||'N/A',month:monthKey,days:new Set()};
+    studentReport[stuKey].days.add(r.date);
+  });
+
+  const studentRows=[];
+  for(const k in studentReport){
+    const item=studentReport[k];
+    const parts=item.month.split('-').map(Number);
+    const totalDays=workingDays>0 ? workingDays : new Date(parts[0],parts[1],0).getDate();
+    const attended=item.days.size;
+    const perc=totalDays>0 ? ((attended/totalDays)*100).toFixed(1) : '0.0';
+    studentRows.push({roll:item.roll,name:item.name,class:item.class,month:item.month,attended:attended,totalDays:totalDays,perc:perc});
+  }
+
+  studentRows.forEach(r=>{
+    const key=`${r.class}|${r.month}`;
+    if(!classReport[key]) classReport[key]={class:r.class,month:r.month,totalStudents:0,totalDays:r.totalDays,totalAttendance:0};
+    classReport[key].totalStudents+=1;
+    classReport[key].totalAttendance+=r.attended;
+  });
+
+  const classRows=[];
+  for(const k in classReport){
+    const c=classReport[k];
+    const maxPossible=c.totalStudents*c.totalDays;
+    const perc=maxPossible>0 ? ((c.totalAttendance/maxPossible)*100).toFixed(1) : '0.0';
+    classRows.push({class:c.class,month:c.month,totalStudents:c.totalStudents,totalDays:c.totalDays,totalAttendance:c.totalAttendance,perc:perc});
+  }
+  return {studentRows,classRows};
+}
+
+document.getElementById('genReport').addEventListener('click',()=>{
+  const {studentRows,classRows}=calculateReport();
+  const tbody=document.querySelector('#reportTable tbody'); tbody.innerHTML='';
+  studentRows.forEach(r=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${r.roll}</td><td>${r.name}</td><td>${r.class}</td><td>${r.month}</td><td>${r.attended}</td><td>${r.totalDays}</td><td>${r.perc}%</td>`;
+    tbody.appendChild(tr);
+  });
+  const tbody2=document.querySelector('#classReportTable tbody'); tbody2.innerHTML='';
+  classRows.forEach(c=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${c.class}</td><td>${c.month}</td><td>${c.totalStudents}</td><td>${c.totalDays}</td><td>${c.totalAttendance}</td><td>${c.perc}%</td>`;
+    tbody2.appendChild(tr);
+  });
+});
+
+document.getElementById('exportStudentReport').addEventListener('click',()=>{
+  const {studentRows}=calculateReport(); let csv="roll,name,class,month,attended,totalDays,percentage\n";
+  studentRows.forEach(r=>{csv+=`${escapeCsv(r.roll)},${escapeCsv(r.name)},${escapeCsv(r.class)},${r.month},${r.attended},${r.totalDays},${r.perc}%\n`;});
+  downloadCSV(csv,"student_report.csv");
+});
+document.getElementById('exportClassReport').addEventListener('click',()=>{
+  const {classRows}=calculateReport(); let csv="class,month,totalStudents,totalDays,totalAttendance,percentage\n";
+  classRows.forEach(c=>{csv+=`${escapeCsv(c.class)},${c.month},${c.totalStudents},${c.totalDays},${c.totalAttendance},${c.perc}%\n`;});
+  downloadCSV(csv,"class_report.csv");
+});
 </script>
 </body>
 </html>
