@@ -600,8 +600,9 @@ function loadWorkingDays(){ return parseInt(localStorage.getItem('workingDays')|
 openDB().catch(e => console.error("Database initialization failed:", e));
 
 // ---------- Face Recognition Setup ----------
-// FIX: Updated MODEL_URL to the highly stable GitHub Pages model path
-const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models/';
+// FIX: Using the local folder path. YOU MUST HAVE A FOLDER NAMED 'models' 
+// in the same directory as this HTML file, containing the model files.
+const MODEL_URL = './models'; 
 let faceMatcher = null;
 const startScanBtn = document.getElementById('startScan');
 const scanResultDiv = document.getElementById('scanResult');
@@ -625,8 +626,8 @@ async function loadFaceModels() {
         scanResultDiv.textContent = "Ready to scan.";
         startScanBtn.disabled = false;
     } catch(e) {
-        console.error("Failed to load Face-API models:", e);
-        scanResultDiv.textContent = "❌ Error loading models. Check console.";
+        console.error("Failed to load Face-API models. Check if the local 'models' folder exists and contains all required files.", e);
+        scanResultDiv.textContent = "❌ Error loading models. Check console and 'models' folder setup.";
         startScanBtn.disabled = true;
     }
 }
