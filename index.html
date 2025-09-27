@@ -22,7 +22,6 @@
 
 /* --- Base & Typography --- */
 body {
-    /* Changed font-family to one closer to the screenshot's clean look */
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
     padding: 0;
@@ -45,8 +44,7 @@ h2 {
     margin: 10px 0 20px;
     font-size: 1.8rem;
     font-weight: 600;
-    /* Removed bottom border to match screenshot's "Generate QR Code" look */
-    border-bottom: none; 
+    border-bottom: none;
     padding-bottom: 0;
     max-width: 800px;
     margin-left: auto;
@@ -73,7 +71,7 @@ nav {
 nav button {
     padding: 12px 22px;
     border: none;
-    border-radius: 6px; /* Reduced border-radius from 25px to 6px to match screenshot's sharper edges */
+    border-radius: 6px;
     background: var(--primary-color);
     color: var(--text-color-light);
     font-size: 15px;
@@ -81,8 +79,7 @@ nav button {
     cursor: pointer;
     transition: background 0.3s, transform 0.2s, box-shadow 0.3s;
     margin: 5px;
-    /* Adjusted shadow to match screenshot's subtle lift */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 nav button:hover {
@@ -96,8 +93,8 @@ nav button.active-nav {
     box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.2);
     transform: translateY(0);
 }
-/* Ensure 'Generate QR' button is blue and active on load, matching the screenshot */
-[data-tab="gen"] { 
+/* Ensure 'Generate QR' button is blue and active on load */
+[data-tab="gen"] {
     background: #004c99;
     box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.2);
 }
@@ -105,11 +102,11 @@ nav button.active-nav {
 /* --- Tab Content: The Main Card Container --- */
 .tab {
     display: none;
-    max-width: 800px; /* Reduced max-width slightly to match screenshot's card size */
+    max-width: 800px;
     margin: 0 auto 50px;
-    padding: 40px; /* Increased padding for more inner space */
+    padding: 40px;
     background: var(--background-white);
-    border-radius: 12px; /* Slightly adjusted border-radius */
+    border-radius: 12px;
     box-shadow: var(--shadow-light);
     animation: fadeIn 0.5s ease-out;
 }
@@ -126,43 +123,43 @@ nav button.active-nav {
 /* --- Form Elements & Inputs --- */
 label {
     display: block;
-    margin: 20px 0 8px; /* Adjusted margins for better spacing */
+    margin: 20px 0 8px;
     font-weight: 600;
-    color: #495057; /* Slightly darker/more prominent text color */
+    color: #495057;
     font-size: 1rem;
 }
 
-input[type="text"], 
-input[type="number"], 
+input[type="text"],
+input[type="number"],
 input[type="file"] {
-    width: 100%; /* Make inputs full width of their container */
-    max-width: 500px; /* Limit max width for better form aesthetics */
-    padding: 12px 15px; /* Increased padding to match screenshot's field size */
+    width: 100%;
+    max-width: 500px;
+    padding: 12px 15px;
     border-radius: 8px;
-    border: 1px solid #dee2e6; /* Lighter border color for a softer look */
-    margin-bottom: 5px; /* Reduced margin-bottom as labels already have margin */
+    border: 1px solid #dee2e6;
+    margin-bottom: 5px;
     transition: border-color 0.3s, box-shadow 0.3s;
     font-size: 1rem;
-    box-sizing: border-box; /* Ensures padding doesn't affect total width */
+    box-sizing: border-box;
 }
 
-input[type="text"]:focus, 
+input[type="text"]:focus,
 input[type="number"]:focus {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15); /* Softer focus glow */
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
     outline: none;
 }
 
 /* --- Buttons (General) --- */
 .tab button, .tab a.button {
-    padding: 12px 25px; /* Increased padding for the main button, matching screenshot */
+    padding: 12px 25px;
     border: none;
-    border-radius: 6px; /* Matches nav button radius */
+    border-radius: 6px;
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
     transition: background 0.3s, transform 0.2s, box-shadow 0.3s;
-    margin: 25px 5px 15px 0; /* Increased top margin for separation from inputs */
+    margin: 25px 5px 15px 0;
     display: inline-block;
 }
 
@@ -182,7 +179,7 @@ input[type="number"]:focus {
     background: var(--secondary-color);
     color: var(--text-color-light);
     text-decoration: none;
-    line-height: 1; 
+    line-height: 1;
 }
 #downloadBtn:hover {
     background: #218838;
@@ -219,6 +216,8 @@ button[id^="export"]:hover, #genReport:hover, #stopScan:hover, #backupDB:hover {
 #genStatus small { display: block; padding: 5px; border-radius: 4px; }
 #genStatus small[style*="red"] { color: var(--danger-color); background: rgba(220, 53, 69, 0.1); }
 #genStatus small[style*="green"] { color: var(--secondary-color); background: rgba(40, 167, 69, 0.1); }
+#genStatus small[style*="orange"] { color: #fd7e14; background: rgba(253, 126, 20, 0.1); }
+
 
 /* Scanner */
 #preview {
@@ -228,6 +227,7 @@ button[id^="export"]:hover, #genReport:hover, #stopScan:hover, #backupDB:hover {
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     max-width: 100%;
     height: auto;
+    background-color: #eee;
 }
 #scanControls {
     text-align: center;
@@ -241,18 +241,24 @@ button[id^="export"]:hover, #genReport:hover, #stopScan:hover, #backupDB:hover {
     padding: 10px;
     border-radius: 8px;
 }
-#scanResult[style^="❌"], #manualResult[style^="❌"] { 
-    color: var(--danger-color); 
-    background: rgba(220, 53, 69, 0.1); 
+/* These styles are applied via JS to a parent span, not the div directly */
+#scanResult span[style*="--danger-color"], #manualResult span[style*="--danger-color"] {
+    color: var(--danger-color);
+    background: rgba(220, 53, 69, 0.1);
+    display: block;
+    padding: 10px;
+    border-radius: 8px;
 }
-#scanResult[style^="✅"], #manualResult[style^="✅"] { 
-    color: var(--secondary-color); 
-    background: rgba(40, 167, 69, 0.1); 
+#scanResult span[style*="--secondary-color"], #manualResult span[style*="--secondary-color"] {
+    color: var(--secondary-color);
+    background: rgba(40, 167, 69, 0.1);
+    display: block;
+    padding: 10px;
+    border-radius: 8px;
 }
-/* Fallback for the JS-driven content textContent */
-#scanResult:not([style]), #manualResult:not([style]) {
-      color: var(--text-color-dark); 
-      background: var(--background-light); 
+#scanResult:not(:has(span)), #manualResult:not(:has(span)) {
+     color: var(--text-color-dark);
+     background: var(--background-light);
 }
 
 
@@ -287,7 +293,7 @@ table {
     border-spacing: 0;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     border-radius: 12px;
-    overflow: hidden; 
+    overflow: hidden;
 }
 
 th, td {
@@ -309,11 +315,11 @@ tbody tr:nth-child(even) {
 }
 
 tbody tr:hover {
-    background: #e3f2fd; 
+    background: #e3f2fd;
     cursor: default;
     box-shadow: inset 0 0 0 2px var(--primary-color);
     position: relative;
-    z-index: 1; 
+    z-index: 1;
 }
 
 /* Last row/cell cleanup */
@@ -335,14 +341,14 @@ tr:last-child td {
 @media (max-width: 768px) {
     h1 { font-size: 2rem; }
     h2 { font-size: 1.5rem; }
-    
+
     nav {
         flex-direction: row;
         gap: 5px;
     }
     nav button {
         flex-grow: 1;
-        max-width: 48%; 
+        max-width: 48%;
         font-size: 13px;
         padding: 10px 15px;
     }
@@ -351,17 +357,17 @@ tr:last-child td {
         max-width: 100%;
         width: 100%;
     }
-    
-    /* Table for small screens: makes table cells behave like block elements */
+
+    /* Table for small screens: makes table scrollable horizontally */
     table {
         display: block;
-        overflow-x: auto; 
+        overflow-x: auto;
         white-space: nowrap;
         max-width: 100%;
         border-radius: 0;
         box-shadow: none;
     }
-    
+
     #reportTable, #classReportTable {
         border-radius: 8px;
         box-shadow: var(--shadow-light);
@@ -370,16 +376,16 @@ tr:last-child td {
 
 @media (max-width: 480px) {
     nav button {
-        max-width: 100%; 
+        max-width: 100%;
     }
-    
+
     /* Re-sizing the canvas and video for very small screens */
     #qrCanvas, #preview {
         max-width: 90%;
         height: auto;
     }
 }
-       
+
 </style>
 </head>
 <body>
@@ -396,11 +402,11 @@ tr:last-child td {
 
 <div id="gen" class="tab">
 <h2>Generate QR Code</h2>
-<label for="genRoll">Roll:</label> 
+<label for="genRoll">Roll:</label>
 <input id="genRoll" type="text" placeholder="Student Roll Number"><br>
-<label for="genName">Name:</label> 
+<label for="genName">Name:</label>
 <input id="genName" type="text" placeholder="Student Name"><br>
-<label for="genClass">Class:</label> 
+<label for="genClass">Class:</label>
 <input id="genClass" type="text" placeholder="e.g., 10A, BTech CS"><br>
 <button id="genBtn">Generate QR Code</button>
 <canvas id="qrCanvas" width="450" height="450"></canvas><br>
@@ -422,7 +428,7 @@ tr:last-child td {
 
 <div id="manual" class="tab">
 <h2>Manual Attendance</h2>
-<label for="manualRoll">Enter Roll Number:</label> 
+<label for="manualRoll">Enter Roll Number:</label>
 <input type="text" id="manualRoll" placeholder="Roll Number"><br>
 <button id="markManual">Mark Attendance</button>
 <div id="manualResult"></div>
@@ -451,7 +457,7 @@ tr:last-child td {
 
 <div id="reports" class="tab">
 <h2>Monthly Attendance Report Generation</h2>
-<label for="workingDays">Enter Working Days for Percentage Calculation:</label> 
+<label for="workingDays">Enter Working Days for Percentage Calculation:</label>
 <input type="number" id="workingDays" placeholder="e.g. 22" value="22">
 <button id="genReport">Generate Report</button>
 
@@ -483,20 +489,20 @@ tr:last-child td {
 <script>
 // --- START OF JAVASCRIPT (IndexedDB Version) ---
 
-// ---------- IndexedDB Setup ----------
+// ---------- IndexedDB Setup (Refactored for stability) ----------
 const DB_NAME = 'AttendanceDB';
 const DB_VERSION = 1;
 const STORE_STUDENTS = 'students';
 const STORE_ATTENDANCE = 'attendance';
-let db;
+let dbPromise;
 
 function openDB() {
     return new Promise((resolve, reject) => {
         const request = indexedDB.open(DB_NAME, DB_VERSION);
 
         request.onupgradeneeded = (event) => {
-            db = event.target.result;
-            
+            const db = event.target.result;
+
             // Students store: keyPath is 'roll' for easy lookup/update
             if (!db.objectStoreNames.contains(STORE_STUDENTS)) {
                 db.createObjectStore(STORE_STUDENTS, { keyPath: 'roll' });
@@ -511,9 +517,8 @@ function openDB() {
         };
 
         request.onsuccess = (event) => {
-            db = event.target.result;
             console.log('IndexedDB opened successfully.');
-            resolve(db);
+            resolve(event.target.result);
         };
 
         request.onerror = (event) => {
@@ -523,57 +528,60 @@ function openDB() {
     });
 }
 
-// Function to get all data from a store (used by loadStudents, loadAttendance)
-function getAllData(storeName) {
-    return new Promise(async (resolve, reject) => {
-        await openDB();
-        const transaction = db.transaction([storeName], 'readonly');
-        const store = transaction.objectStore(storeName);
-        const request = store.getAll();
+async function performDBOperation(storeName, mode, operation) {
+    const db = await dbPromise;
+    const transaction = db.transaction([storeName], mode);
+    const store = transaction.objectStore(storeName);
+    return operation(store);
+}
 
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
+// Function to get all data from a store
+async function getAllData(storeName) {
+    return new Promise(async (resolve, reject) => {
+        await performDBOperation(storeName, 'readonly', (store) => {
+            const request = store.getAll();
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = (e) => reject(e.target.error);
+        });
     });
 }
 
-// Function to get a single item by key (for students by roll)
-function getDataByKey(storeName, key) {
+// Function to get a single item by key
+async function getDataByKey(storeName, key) {
     return new Promise(async (resolve, reject) => {
-        await openDB();
-        const transaction = db.transaction([storeName], 'readonly');
-        const store = transaction.objectStore(storeName);
-        const request = store.get(key);
-
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
+        await performDBOperation(storeName, 'readonly', (store) => {
+            const request = store.get(key);
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = (e) => reject(e.target.error);
+        });
     });
 }
 
-// Function to add or update an item (used by saveStudent, saveAttendanceRecord)
-function putData(storeName, data) {
+// Function to add or update an item
+async function putData(storeName, data) {
     return new Promise(async (resolve, reject) => {
-        await openDB();
-        const transaction = db.transaction([storeName], 'readwrite');
-        const store = transaction.objectStore(storeName);
-        const request = store.put(data);
-
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
+        await performDBOperation(storeName, 'readwrite', (store) => {
+            const request = store.put(data);
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = (e) => reject(e.target.error);
+        });
     });
 }
 
 // Custom load/save functions for clarity
 async function loadStudents() { return getAllData(STORE_STUDENTS); }
-async function saveStudent(student) { return putData(STORE_STUDENTS, student); } // Used for both add and update
+async function saveStudent(student) { return putData(STORE_STUDENTS, student); }
 async function loadAttendance() { return getAllData(STORE_ATTENDANCE); }
 async function saveAttendanceRecord(record) { return putData(STORE_ATTENDANCE, record); }
 
 // LocalStorage for workingDays (non-critical, smaller data)
 function saveWorkingDays(val){ localStorage.setItem('workingDays',val); }
-function loadWorkingDays(){ return parseInt(localStorage.getItem('workingDays')||'0'); }
+function loadWorkingDays(){ return parseInt(localStorage.getItem('workingDays')||'22'); }
 
 // Initialize DB on load
-openDB().catch(e => console.error("Database initialization failed:", e));
+dbPromise = openDB();
+dbPromise.catch(e => console.error("Database initialization failed:", e));
+
 
 // ---------- Tabs ----------
 document.querySelectorAll('nav button').forEach(btn=>{
@@ -581,7 +589,7 @@ document.querySelectorAll('nav button').forEach(btn=>{
         // Remove active class from all tabs and nav buttons
         document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
         document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active-nav'));
-        
+
         // Add active class to selected tab and nav button
         document.getElementById(btn.dataset.tab).classList.add('active');
         btn.classList.add('active-nav');
@@ -590,13 +598,13 @@ document.querySelectorAll('nav button').forEach(btn=>{
         if(btn.dataset.tab==='students') renderStudents();
         if(btn.dataset.tab==='attendance') renderAttendance();
         if(btn.dataset.tab==='reports'){
-            const savedDays = loadWorkingDays();
-            if(savedDays > 0) document.getElementById('workingDays').value = savedDays;
+            document.getElementById('workingDays').value = loadWorkingDays();
             document.getElementById('genReport').click(); // Auto-generate report
         }
     });
 });
 document.querySelector('nav button').click(); // default to first tab on load
+
 
 // ---------- Generate QR ----------
 const genBtn=document.getElementById('genBtn');
@@ -609,38 +617,32 @@ genBtn.addEventListener('click',async ()=>{
     const roll=document.getElementById('genRoll').value.trim();
     let name=document.getElementById('genName').value.trim();
     let cls=document.getElementById('genClass').value.trim();
-    
+
     if(!roll){ alert('Enter Roll Number.'); return; }
     if(!name) name="Unknown";
     if(!cls) cls="N/A";
 
     const existingStudent = await getDataByKey(STORE_STUDENTS, roll);
-
     const newStudentData = {roll, name, class: cls};
+    let statusMessage = '';
 
     try {
-        if(existingStudent){
-            // Check if data is the same, otherwise update student info
-            if(existingStudent.name !== name || existingStudent.class !== cls){
-                await saveStudent(newStudentData);
-                genStatus.innerHTML=<small style="color:orange">⚠ Student info updated for: ${roll}</small>;
-            } else {
-                genStatus.innerHTML=<small style="color:red">❌ QR already generated for: ${roll}</small>;
-                // Still generate/show QR if it exists
-            }
+        await saveStudent(newStudentData);
+        if(existingStudent && (existingStudent.name !== name || existingStudent.class !== cls)){
+             statusMessage = `<small style="color:orange">⚠ Student info updated & QR re-generated for: ${roll}</small>`;
         } else {
-            await saveStudent(newStudentData);
-            genStatus.innerHTML=<small style="color:green">✔ Student added & QR generated: <code>${roll}</code></small>;
+             statusMessage = `<small style="color:green">✔ Student saved & QR generated for: ${roll}</small>`;
         }
     } catch(e) {
-        genStatus.innerHTML=<small style="color:red">❌ Database Error: Failed to save/update student.</small>;
+        genStatus.innerHTML = `<small style="color:red">❌ Database Error: Failed to save/update student.</small>`;
         console.error(e);
         return;
     }
 
     // Payload format: ATT|Roll|Name|Class
-    const payload=ATT|${roll}|${name}|${cls};
-    const ctx = qrCanvas.getContext('2d'); ctx.clearRect(0,0,qrCanvas.width,qrCanvas.height);
+    const payload=`ATT|${roll}|${name}|${cls}`;
+    const ctx = qrCanvas.getContext('2d');
+    ctx.clearRect(0,0,qrCanvas.width,qrCanvas.height);
 
     qr = new QRious({
         element: qrCanvas,
@@ -652,12 +654,11 @@ genBtn.addEventListener('click',async ()=>{
     });
 
     downloadBtn.href=qrCanvas.toDataURL('image/png');
-    downloadBtn.download=qr_${roll}.png;
+    downloadBtn.download=`qr_${roll}.png`;
     downloadBtn.style.display='inline-block';
-    if(!existingStudent || existingStudent.name !== name || existingStudent.class !== cls){
-        genStatus.innerHTML=<small style="color:green">✔ QR generated: <code>${roll}</code></small>;
-    }
+    genStatus.innerHTML = statusMessage;
 });
+
 
 // ---------- Scanner & Manual Attendance Handler ----------
 let codeReader=null,activeStream=null,lastScanned="";
@@ -667,60 +668,61 @@ const preview = document.getElementById('preview');
 document.getElementById('startScan').addEventListener('click',async()=>{
     if(!codeReader) codeReader=new ZXing.BrowserQRCodeReader();
     scanResultDiv.textContent="Starting camera...";
-    
+
     try{
         if(activeStream){ activeStream.getTracks().forEach(track=>track.stop()); }
         activeStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
-        preview.srcObject=activeStream; 
+        preview.srcObject=activeStream;
         preview.setAttribute("playsinline",true);
         await preview.play();
         scanResultDiv.textContent="Scanning...";
-        
+
         codeReader.decodeFromVideoDevice(null,preview,(result,err)=>{
             if(result){
                 const payload=result.getText();
                 if(payload!==lastScanned){
                     lastScanned=payload;
-                    handleScan(payload, scanResultDiv.id);
-                    setTimeout(()=>{lastScanned="";}, 3000); 
+                    handleScan(payload, 'scanResult');
+                    setTimeout(()=>{lastScanned="";}, 3000);
                 }
             }
         });
-    }catch(e){ 
-        console.error("Camera error:",e); 
-        alert("Could not access camera. Ensure you have a camera and have granted permission."); 
+    }catch(e){
+        console.error("Camera error:",e);
+        alert("Could not access camera. Ensure you have a camera and have granted permission.");
         scanResultDiv.textContent="❌ Camera access failed.";
     }
 });
 
 document.getElementById('stopScan').addEventListener('click',()=>{
-    if(activeStream){ 
-        activeStream.getTracks().forEach(track=>track.stop()); 
-        activeStream=null; 
+    if(activeStream){
+        activeStream.getTracks().forEach(track=>track.stop());
+        activeStream=null;
         codeReader.reset();
     }
     scanResultDiv.textContent="Scan stopped.";
 });
 
-// ---------- Handle Scan + Voice (Refactored for IndexedDB) ----------
+
+// ---------- Handle Scan + Voice ----------
 async function handleScan(payload, resultDivId){
     let roll='';
     const parts=(payload||'').split('|').map(p=>p.trim());
-    
+
     // Extract roll from payload (ATT|Roll|Name|Class or just Roll)
-    if(parts.length>=4 && parts[0].toUpperCase()==='ATT'){ 
-        roll=parts[1]; 
-    } else { 
-        roll=parts[0]||''; 
+    if(parts.length>=2 && parts[0].toUpperCase()==='ATT'){
+        roll=parts[1];
+    } else {
+        roll=parts[0]||'';
     }
 
-    roll=roll.trim()||'';
+    roll=roll.trim();
     const resultDiv = document.getElementById(resultDivId);
     const today=new Date().toISOString().slice(0,10);
 
     if (!roll) {
-        const msg=Invalid QR/Roll Data.;
-        resultDiv.innerHTML=<span style="color:var(--danger-color)">❌ ${msg}</span>;
+        const msg = `Invalid QR/Roll Data.`;
+        resultDiv.innerHTML=`<span style="color:var(--danger-color)">❌ ${msg}</span>`;
         speak(msg);
         return;
     }
@@ -733,27 +735,27 @@ async function handleScan(payload, resultDivId){
         recs = await loadAttendance();
     } catch (e) {
         console.error("DB Read Error:", e);
-        const msg = DB Read Error for ${roll}.;
-        resultDiv.innerHTML=<span style="color:var(--danger-color)">❌ ${msg}</span>;
+        const msg = `DB Read Error for ${roll}.`;
+        resultDiv.innerHTML=`<span style="color:var(--danger-color)">❌ ${msg}</span>`;
         speak(msg);
         return;
     }
-    
+
     if(!studentExists){
-        const msg=Invalid Roll Number: ${roll};
-        resultDiv.innerHTML=<span style="color:var(--danger-color)">❌ ${msg}</span>;
+        const msg=`Invalid Roll Number: ${roll}`;
+        resultDiv.innerHTML=`<span style="color:var(--danger-color)">❌ ${msg}</span>`;
         speak(msg);
         showStudentHistory(roll, resultDivId === 'scanResult' ? 'scanHistory' : 'manualHistory');
         return;
     }
-    
+
     const studentName = studentExists.name;
     const studentClass = studentExists.class || 'N/A';
 
     // Check for existing attendance today
     if(recs.find(r=>r.roll===roll && r.date===today)){
-        const msg=Attendance already marked for ${studentName} (Roll: ${roll});
-        resultDiv.innerHTML=<span style="color:var(--danger-color)">❌ ${msg}</span>;
+        const msg=`Attendance already marked for ${studentName} (Roll: ${roll})`;
+        resultDiv.innerHTML=`<span style="color:var(--danger-color)">❌ ${msg}</span>`;
         speak(msg);
         showStudentHistory(roll, resultDivId === 'scanResult' ? 'scanHistory' : 'manualHistory');
         return;
@@ -763,25 +765,27 @@ async function handleScan(payload, resultDivId){
     const newRecord = {roll:roll, name:studentName, class:studentClass, ts:Date.now(), date:today};
     try {
         await saveAttendanceRecord(newRecord);
-        const msg=Attendance marked for ${studentName} (Roll: ${roll});
-        resultDiv.innerHTML=<span style="color:var(--secondary-color)">✅ ${msg} — Class: ${studentClass}</span>;
+        const msg=`Attendance marked for ${studentName} (Roll: ${roll})`;
+        resultDiv.innerHTML=`<span style="color:var(--secondary-color)">✅ ${msg} — Class: ${studentClass}</span>`;
         speak(msg);
         showStudentHistory(roll, resultDivId === 'scanResult' ? 'scanHistory' : 'manualHistory');
     } catch(e) {
         console.error("DB Write Error:", e);
-        const msg = Failed to mark attendance for ${studentName}.;
-        resultDiv.innerHTML=<span style="color:var(--danger-color)">❌ ${msg}</span>;
+        const msg = `Failed to mark attendance for ${studentName}.`;
+        resultDiv.innerHTML=`<span style="color:var(--danger-color)">❌ ${msg}</span>`;
         speak(msg);
     }
 }
+
 
 // ---------- Manual Attendance ----------
 document.getElementById('markManual').addEventListener('click',()=>{
     const roll=document.getElementById('manualRoll').value.trim();
     // Roll is used directly as the payload in handleScan
-    handleScan(roll, 'manualResult'); 
+    handleScan(roll, 'manualResult');
     document.getElementById('manualRoll').value='';
 });
+
 
 // ---------- Voice ----------
 function speak(text){
@@ -795,10 +799,11 @@ function speak(text){
     }catch(e){ console.error('Speech error',e); }
 }
 
-// ---------- Show History (Refactored for IndexedDB) ----------
+
+// ---------- Show History ----------
 async function showStudentHistory(roll,ulId){
     const allRecs = await loadAttendance();
-    const recs=allRecs.filter(r=>r.roll===roll).sort((a,b) => b.ts - a.ts).slice(0, 10); // Sort by timestamp (newest first)
+    const recs=allRecs.filter(r=>r.roll===roll).sort((a,b) => b.ts - a.ts).slice(0, 10);
     const ul=document.getElementById(ulId); ul.innerHTML='';
     if(recs.length===0){
         const li=document.createElement('li');
@@ -809,19 +814,20 @@ async function showStudentHistory(roll,ulId){
     recs.forEach(r=>{
         const classText=r.class||'N/A';
         const li=document.createElement('li');
-        li.textContent=${r.date} — ${r.roll} — ${r.name} — Class: ${classText};
+        li.textContent=`${r.date} — ${r.roll} — ${r.name} — Class: ${classText}`;
         ul.appendChild(li);
     });
 }
 
-// ---------- Students & Attendance Rendering (Refactored for IndexedDB) ----------
+
+// ---------- Students & Attendance Rendering ----------
 async function renderStudents(){
     const ul=document.getElementById('stuList'); ul.innerHTML='';
     const students = await loadStudents();
-    students.sort((a,b) => a.roll.localeCompare(b.roll));
+    students.sort((a,b) => a.roll.localeCompare(b.roll, undefined, {numeric: true}));
     students.forEach(s=>{
         const li=document.createElement('li');
-        li.textContent=Roll: ${s.roll} — Name: ${s.name} — Class: ${s.class||'N/A'}; 
+        li.textContent=`Roll: ${s.roll} — Name: ${s.name} — Class: ${s.class||'N/A'}`;
         ul.appendChild(li);
     });
 }
@@ -835,53 +841,56 @@ async function renderAttendance(){
         const classText=r.class||'N/A';
         const ts = new Date(r.ts).toLocaleTimeString();
         const li=document.createElement('li');
-        li.textContent=${r.date} ${ts} — Roll: ${r.roll} — Name: ${r.name} — Class: ${classText};
+        li.textContent=`${r.date} ${ts} — Roll: ${r.roll} — Name: ${r.name} — Class: ${classText}`;
         ul.appendChild(li);
     });
 }
 
-// ---------- CSV Utility (Remains the same) ----------
-function downloadCSV(data,filename){ 
-    const blob=new Blob([data],{type:'text/csv;charset=utf-8;'}); 
-    const url=URL.createObjectURL(blob); 
-    const a=document.createElement('a'); 
+
+// ---------- CSV Utility ----------
+function downloadCSV(data,filename){
+    const blob=new Blob([data],{type:'text/csv;charset=utf-8;'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
     a.href=url;a.download=filename;document.body.appendChild(a);
-    a.click(); 
+    a.click();
     document.body.removeChild(a);
-    URL.revokeObjectURL(url); 
+    URL.revokeObjectURL(url);
 }
 
-function escapeCsv(val){ 
-    if(val==null) return ''; 
+function escapeCsv(val){
+    if(val==null) return '';
     let str = String(val);
     if(str.includes(',') || str.includes('"') || str.includes('\n')) {
-        return "${str.replace(/"/g,'""')}"; 
+        return `"${str.replace(/"/g,'""')}"`;
     }
-    return str; 
+    return str;
 }
 
-// ---------- CSV Exports (Refactored for IndexedDB) ----------
+
+// ---------- CSV Exports ----------
 document.getElementById('exportStudents').addEventListener('click',async ()=>{
-    const stu=await loadStudents(); 
+    const stu=await loadStudents();
     let csv="roll,name,class\n";
-    stu.forEach(s=>{csv+=${escapeCsv(s.roll)},${escapeCsv(s.name)},${escapeCsv(s.class)}\n;}); 
+    stu.forEach(s=>{csv+=`${escapeCsv(s.roll)},${escapeCsv(s.name)},${escapeCsv(s.class)}\n`;});
     downloadCSV(csv,"students.csv");
 });
 
 document.getElementById('exportRawAttendance').addEventListener('click',async ()=>{
-    const recs=await loadAttendance(); 
+    const recs=await loadAttendance();
     let csv="roll,name,class,timestamp,date\n";
-    recs.forEach(r=>{csv+=${escapeCsv(r.roll)},${escapeCsv(r.name)},${escapeCsv(r.class||'N/A')},${r.ts},${r.date}\n;}); 
+    recs.forEach(r=>{csv+=`${escapeCsv(r.roll)},${escapeCsv(r.name)},${escapeCsv(r.class||'N/A')},${r.ts},${r.date}\n`;});
     downloadCSV(csv,"attendance_raw.csv");
 });
 
-// ---------- Database Backup (New Functionality) ----------
+
+// ---------- Database Backup ----------
 document.getElementById('backupDB').addEventListener('click',async ()=>{
     try {
         const students = await loadStudents();
         const attendance = await loadAttendance();
         const workingDays = loadWorkingDays();
-        
+
         const backupData = {
             timestamp: Date.now(),
             students: students,
@@ -889,14 +898,14 @@ document.getElementById('backupDB').addEventListener('click',async ()=>{
             workingDays: workingDays,
             version: DB_VERSION
         };
-        
+
         const json = JSON.stringify(backupData, null, 2);
         const blob = new Blob([json], {type: 'application/json'});
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         const dateStr = new Date().toISOString().slice(0, 10);
         a.href = url;
-        a.download = attendance_db_backup_${dateStr}.json;
+        a.download = `attendance_db_backup_${dateStr}.json`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -908,21 +917,22 @@ document.getElementById('backupDB').addEventListener('click',async ()=>{
     }
 });
 
-// ---------- CSV Import (Refactored for IndexedDB) ----------
+
+// ---------- CSV Import ----------
 document.getElementById('importCSV').addEventListener('change',e=>{
-    const file=e.target.files[0]; 
+    const file=e.target.files[0];
     if(!file) return;
-    const reader=new FileReader(); 
-    reader.onload=ev=>importCSV(ev.target.result); 
+    const reader=new FileReader();
+    reader.onload=ev=>importCSV(ev.target.result);
     reader.readAsText(file);
 });
 
 async function importCSV(text){
     const lines=(text||'').trim().split(/\r?\n/);
-    const students = await loadStudents(); // Get current list for duplicate check
+    const students = await loadStudents();
     let importedCount = 0;
-    
-    // Simple CSV parser that handles quoted fields (basic)
+
+    // Simple CSV parser that handles quoted fields
     function parseCsvLine(line) {
         const result = [];
         let inQuotes = false;
@@ -949,39 +959,40 @@ async function importCSV(text){
         const line=lines[i].trim();
         if(!line) continue;
         const cols=parseCsvLine(line);
-        
+
         if(cols.length<2) continue;
-        
+
         // Skip header row if it looks like one
-        if(i===0 && /^roll$/i.test(cols[0])) continue; 
-        
+        if(i===0 && /^roll$/i.test(cols[0])) continue;
+
         const roll=(cols[0]||'').trim();
         const name=(cols[1]||'').trim();
         const cls=(cols[2]||'N/A').trim();
-        
+
         // Only import if roll and name are present AND roll doesn't exist already
         if(roll && name && !students.find(s=>s.roll===roll)){
             try {
                 await saveStudent({roll,name,class:cls});
                 importedCount++;
             } catch (e) {
-                console.error(Failed to import student ${roll}:, e);
+                console.error(`Failed to import student ${roll}:`, e);
             }
         }
     }
-    
+
     renderStudents();
-    alert(Successfully imported ${importedCount} new students.);
+    alert(`Successfully imported ${importedCount} new students.`);
     document.getElementById('importCSV').value = ''; // Clear file input
 }
 
-// ---------- Reports (Refactored for IndexedDB) ----------
+
+// ---------- Reports ----------
 async function calculateReport(){
     const recs=await loadAttendance();
     const students = await loadStudents();
     const workingDaysInput=parseInt(document.getElementById('workingDays').value)||0;
     saveWorkingDays(workingDaysInput);
-    
+
     const studentReport={},classReport={};
     const studentsMap = students.reduce((map, s) => {
         map[s.roll] = {name: s.name, class: s.class || 'N/A'};
@@ -991,11 +1002,11 @@ async function calculateReport(){
 
     recs.forEach(r=>{
         // Use the student list as the primary source of name/class info
-        const studentInfo = studentsMap[r.roll] || {name: r.name, class: r.class || 'N/A'}; 
+        const studentInfo = studentsMap[r.roll] || {name: r.name, class: r.class || 'N/A'};
         const d=new Date(r.date);
-        const monthKey=${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')};
-        const stuKey=${r.roll}|${monthKey};
-        
+        const monthKey=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+        const stuKey=`${r.roll}|${monthKey}`;
+
         if(!studentReport[stuKey]) studentReport[stuKey]={roll:r.roll,name:studentInfo.name,class:studentInfo.class,month:monthKey,days:new Set()};
         studentReport[stuKey].days.add(r.date);
     });
@@ -1004,22 +1015,22 @@ async function calculateReport(){
     for(const k in studentReport){
         const item=studentReport[k];
         const parts=item.month.split('-').map(Number);
-        
+
         let totalDays = workingDaysInput;
         // If working days is 0 or not set, calculate total days in month
         if(workingDaysInput === 0) {
             totalDays = new Date(parts[0], parts[1], 0).getDate();
         }
-        
+
         const attended=item.days.size;
         const perc=totalDays>0 ? ((attended/totalDays)*100).toFixed(1) : '0.0';
         studentRows.push({roll:item.roll,name:item.name,class:item.class,month:item.month,attended:attended,totalDays:totalDays,perc:perc});
     }
 
     studentRows.forEach(r=>{
-        const key=${r.class}|${r.month};
+        const key=`${r.class}|${r.month}`;
         if(!classReport[key]) classReport[key]={class:r.class,month:r.month,totalStudents:0,totalDays:r.totalDays,totalAttendance:0, uniqueStudents: new Set()};
-        
+
         // Count unique students per month/class
         if (!classReport[key].uniqueStudents.has(r.roll)) {
             classReport[key].totalStudents+=1;
@@ -1042,7 +1053,7 @@ async function calculateReport(){
 document.getElementById('genReport').addEventListener('click',async ()=>{
     try {
         const {studentRows,classRows}=await calculateReport();
-        
+
         // --- Render Student Report ---
         const tbody=document.querySelector('#reportTable tbody'); tbody.innerHTML='';
         if(studentRows.length === 0){
@@ -1050,7 +1061,7 @@ document.getElementById('genReport').addEventListener('click',async ()=>{
         } else {
             studentRows.forEach(r=>{
                 const tr=document.createElement('tr');
-                tr.innerHTML=<td>${r.roll}</td><td>${r.name}</td><td>${r.class}</td><td>${r.month}</td><td>${r.attended}</td><td>${r.totalDays}</td><td>${r.perc}%</td>;
+                tr.innerHTML=`<td>${r.roll}</td><td>${r.name}</td><td>${r.class}</td><td>${r.month}</td><td>${r.attended}</td><td>${r.totalDays}</td><td>${r.perc}%</td>`;
                 tbody.appendChild(tr);
             });
         }
@@ -1062,7 +1073,7 @@ document.getElementById('genReport').addEventListener('click',async ()=>{
         } else {
             classRows.forEach(c=>{
                 const tr=document.createElement('tr');
-                tr.innerHTML=<td>${c.class}</td><td>${c.month}</td><td>${c.totalStudents}</td><td>${c.totalDays}</td><td>${c.totalAttendance}</td><td>${c.perc}%\t</td>;
+                tr.innerHTML=`<td>${c.class}</td><td>${c.month}</td><td>${c.totalStudents}</td><td>${c.totalDays}</td><td>${c.totalAttendance}</td><td>${c.perc}%</td>`;
                 tbody2.appendChild(tr);
             });
         }
@@ -1073,16 +1084,16 @@ document.getElementById('genReport').addEventListener('click',async ()=>{
 });
 
 document.getElementById('exportStudentReport').addEventListener('click',async ()=>{
-    const {studentRows}=await calculateReport(); 
+    const {studentRows}=await calculateReport();
     let csv="roll,name,class,month,attended,totalDays,percentage\n";
-    studentRows.forEach(r=>{csv+=${escapeCsv(r.roll)},${escapeCsv(r.name)},${escapeCsv(r.class)},${r.month},${r.attended},${r.totalDays},${r.perc}%\n;});
+    studentRows.forEach(r=>{csv+=`${escapeCsv(r.roll)},${escapeCsv(r.name)},${escapeCsv(r.class)},${r.month},${r.attended},${r.totalDays},${r.perc}%\n`;});
     downloadCSV(csv,"student_report.csv");
 });
 
 document.getElementById('exportClassReport').addEventListener('click',async ()=>{
-    const {classRows}=await calculateReport(); 
+    const {classRows}=await calculateReport();
     let csv="class,month,totalStudents,totalDays,totalAttendance,percentage\n";
-    classRows.forEach(c=>{csv+=${escapeCsv(c.class)},${c.month},${c.totalStudents},${c.totalDays},${c.totalAttendance},${c.perc}%\n;});
+    classRows.forEach(c=>{csv+=`${escapeCsv(c.class)},${c.month},${c.totalStudents},${c.totalDays},${c.totalAttendance},${c.perc}%\n`;});
     downloadCSV(csv,"class_report.csv");
 });
 
