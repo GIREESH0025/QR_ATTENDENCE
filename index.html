@@ -148,7 +148,7 @@ input[type="number"]:focus {
     outline: none;
 }
 
-/* --- Buttons (General) --- */
+/* --- Buttons (General) */
 .tab button, .tab a.button {
     padding: 12px 25px; 
     border: none;
@@ -601,8 +601,8 @@ function loadWorkingDays(){ return parseInt(localStorage.getItem('workingDays')|
 openDB().catch(e => console.error("Database initialization failed:", e));
 
 // ---------- Face Recognition Setup ----------
-// Using the local folder path. YOU MUST HAVE A FOLDER NAMED 'models' 
-const MODEL_URL = './models'; 
+// FIX for GitHub Pages: Use the external CDN for models.
+const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models/'; 
 let faceMatcher = null;
 const startScanBtn = document.getElementById('startScan');
 const scanResultDiv = document.getElementById('scanResult');
@@ -618,6 +618,7 @@ const recognitionThreshold = 0.6; // Lower value is more strict match
 async function loadFaceModels() {
     scanResultDiv.textContent = "Loading Face Models...";
     try {
+        // Models are loaded from the MODEL_URL
         await faceapi.nets.tinyFaceDetector.load(MODEL_URL);
         await faceapi.nets.faceLandmark68Net.load(MODEL_URL);
         await faceapi.nets.faceRecognitionNet.load(MODEL_URL);
@@ -626,9 +627,9 @@ async function loadFaceModels() {
         scanResultDiv.textContent = "Ready to scan.";
         startScanBtn.disabled = false;
     } catch(e) {
-        // If models fail to load, this error message is crucial
-        console.error("Failed to load Face-API models. Check if the local 'models' folder exists and contains all required files.", e);
-        scanResultDiv.textContent = "❌ Error loading models. Check console and 'models' folder setup.";
+        // This is the error handler for model load issues
+        console.error("Failed to load Face-API models. Check the network tab for 404 errors.", e);
+        scanResultDiv.textContent = "❌ Error loading models. Check console/network for status codes.";
         startScanBtn.disabled = true;
     }
 }
