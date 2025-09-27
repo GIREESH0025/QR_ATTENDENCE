@@ -3,12 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Facial Recognition Attendance System (IndexedDB)</title>
-
-<script src="face-api.js/face-api.min.js"></script>
-
+<title>QR Attendance System (IndexedDB)</title>
 <style>
-/* --- CSS Variables for Easy Theming (Kept the same) --- */
+/* --- CSS Variables for Easy Theming --- */
 :root {
     --primary-color: #007bff; /* Blue */
     --secondary-color: #28a745; /* Green for success */
@@ -25,6 +22,7 @@
 
 /* --- Base & Typography --- */
 body {
+    /* Changed font-family to one closer to the screenshot's clean look */
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
     padding: 0;
@@ -47,6 +45,7 @@ h2 {
     margin: 10px 0 20px;
     font-size: 1.8rem;
     font-weight: 600;
+    /* Removed bottom border to match screenshot's "Generate QR Code" look */
     border-bottom: none; 
     padding-bottom: 0;
     max-width: 800px;
@@ -74,7 +73,7 @@ nav {
 nav button {
     padding: 12px 22px;
     border: none;
-    border-radius: 6px; 
+    border-radius: 6px; /* Reduced border-radius from 25px to 6px to match screenshot's sharper edges */
     background: var(--primary-color);
     color: var(--text-color-light);
     font-size: 15px;
@@ -82,6 +81,7 @@ nav button {
     cursor: pointer;
     transition: background 0.3s, transform 0.2s, box-shadow 0.3s;
     margin: 5px;
+    /* Adjusted shadow to match screenshot's subtle lift */
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
 }
 
@@ -96,15 +96,20 @@ nav button.active-nav {
     box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.2);
     transform: translateY(0);
 }
+/* Ensure 'Generate QR' button is blue and active on load, matching the screenshot */
+[data-tab="gen"] { 
+    background: #004c99;
+    box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.2);
+}
 
 /* --- Tab Content: The Main Card Container --- */
 .tab {
     display: none;
-    max-width: 800px; 
+    max-width: 800px; /* Reduced max-width slightly to match screenshot's card size */
     margin: 0 auto 50px;
-    padding: 40px; 
+    padding: 40px; /* Increased padding for more inner space */
     background: var(--background-white);
-    border-radius: 12px; 
+    border-radius: 12px; /* Slightly adjusted border-radius */
     box-shadow: var(--shadow-light);
     animation: fadeIn 0.5s ease-out;
 }
@@ -121,53 +126,53 @@ nav button.active-nav {
 /* --- Form Elements & Inputs --- */
 label {
     display: block;
-    margin: 20px 0 8px; 
+    margin: 20px 0 8px; /* Adjusted margins for better spacing */
     font-weight: 600;
-    color: #495057; 
+    color: #495057; /* Slightly darker/more prominent text color */
     font-size: 1rem;
 }
 
 input[type="text"], 
 input[type="number"], 
 input[type="file"] {
-    width: 100%; 
-    max-width: 500px; 
-    padding: 12px 15px; 
+    width: 100%; /* Make inputs full width of their container */
+    max-width: 500px; /* Limit max width for better form aesthetics */
+    padding: 12px 15px; /* Increased padding to match screenshot's field size */
     border-radius: 8px;
-    border: 1px solid #dee2e6; 
-    margin-bottom: 5px; 
+    border: 1px solid #dee2e6; /* Lighter border color for a softer look */
+    margin-bottom: 5px; /* Reduced margin-bottom as labels already have margin */
     transition: border-color 0.3s, box-shadow 0.3s;
     font-size: 1rem;
-    box-sizing: border-box; 
+    box-sizing: border-box; /* Ensures padding doesn't affect total width */
 }
 
 input[type="text"]:focus, 
 input[type="number"]:focus {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15); 
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15); /* Softer focus glow */
     outline: none;
 }
 
-/* --- Buttons (General) */
+/* --- Buttons (General) --- */
 .tab button, .tab a.button {
-    padding: 12px 25px; 
+    padding: 12px 25px; /* Increased padding for the main button, matching screenshot */
     border: none;
-    border-radius: 6px; 
+    border-radius: 6px; /* Matches nav button radius */
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
     transition: background 0.3s, transform 0.2s, box-shadow 0.3s;
-    margin: 25px 5px 15px 0; 
+    margin: 25px 5px 15px 0; /* Increased top margin for separation from inputs */
     display: inline-block;
 }
 
 /* Primary Button (Generate) */
-#regFaceBtn, #markManual, #startScan {
+#genBtn, #markManual, #startScan {
     background: var(--primary-color);
     color: var(--text-color-light);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
-#regFaceBtn:hover, #markManual:hover, #startScan:hover {
+#genBtn:hover, #markManual:hover, #startScan:hover {
     background: #0056b3;
     transform: translateY(-1px);
 }
@@ -194,8 +199,8 @@ button[id^="export"]:hover, #genReport:hover, #stopScan:hover, #backupDB:hover {
 
 /* --- Specific Section Styles --- */
 
-/* QR Canvas (Modified for Face Registration) */
-#faceRegVideo {
+/* QR Canvas */
+#qrCanvas {
     display: block;
     margin: 25px auto;
     border: 5px solid var(--primary-color);
@@ -203,22 +208,7 @@ button[id^="export"]:hover, #genReport:hover, #stopScan:hover, #backupDB:hover {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     max-width: 90%;
     height: auto;
-    /* Face-API.js specific: position the canvas over the video */
-    position: relative;
 }
-
-#faceRegCanvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    /* Make canvas overlay the video properly */
-    margin: 25px auto; 
-    /* Ensures canvas is sized correctly */
-    display: block;
-    border-radius: 12px;
-    max-width: 90%;
-}
-
 
 #genStatus {
     text-align: center;
@@ -227,29 +217,18 @@ button[id^="export"]:hover, #genReport:hover, #stopScan:hover, #backupDB:hover {
     font-weight: 500;
 }
 #genStatus small { display: block; padding: 5px; border-radius: 4px; }
-#genStatus small[style*="orange"] { color: orange; background: rgba(255, 165, 0, 0.1); }
 #genStatus small[style*="red"] { color: var(--danger-color); background: rgba(220, 53, 69, 0.1); }
 #genStatus small[style*="green"] { color: var(--secondary-color); background: rgba(40, 167, 69, 0.1); }
 
 /* Scanner */
-#preview-container {
-    position: relative;
-    width: 300px; /* Base width */
-    height: 200px; /* Base height */
-    margin: 0 auto 20px;
-}
-
-#preview, #overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
+#preview {
     display: block;
+    margin: 0 auto 20px;
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    width: 100%;
-    height: 100%;
+    max-width: 100%;
+    height: auto;
 }
-
 #scanControls {
     text-align: center;
     margin-bottom: 20px;
@@ -300,7 +279,7 @@ button[id^="export"]:hover, #genReport:hover, #stopScan:hover, #backupDB:hover {
 }
 
 
-/* --- Tables (Kept the same) --- */
+/* --- Tables --- */
 table {
     width: 100%;
     margin: 20px auto 30px;
@@ -337,6 +316,7 @@ tbody tr:hover {
     z-index: 1; 
 }
 
+/* Last row/cell cleanup */
 th:last-child, td:last-child {
     border-right: none;
 }
@@ -344,7 +324,7 @@ tr:last-child td {
     border-bottom: none;
 }
 
-/* --- Responsiveness (Kept the same) --- */
+/* --- Responsiveness --- */
 @media (max-width: 992px) {
     .tab {
         padding: 20px;
@@ -372,6 +352,7 @@ tr:last-child td {
         width: 100%;
     }
     
+    /* Table for small screens: makes table cells behave like block elements */
     table {
         display: block;
         overflow-x: auto; 
@@ -392,51 +373,46 @@ tr:last-child td {
         max-width: 100%; 
     }
     
-    #faceRegVideo, #preview {
+    /* Re-sizing the canvas and video for very small screens */
+    #qrCanvas, #preview {
         max-width: 90%;
         height: auto;
     }
 }
-        
+       
 </style>
 </head>
 <body>
-<h1>Facial Recognition Attendance System (IndexedDB)</h1>
+<h1>QR Attendance System (IndexedDB)</h1>
 
 <nav>
-    <button data-tab="gen" class="active-nav">Register Face</button>
-    <button data-tab="scan">Scan Face</button>
+    <button data-tab="gen">Generate QR</button>
+    <button data-tab="scan">Scan QR</button>
     <button data-tab="manual">Manual Attendance</button>
     <button data-tab="students">Students</button>
     <button data-tab="attendance">Attendance</button>
     <button data-tab="reports">Reports</button>
 </nav>
 
-<div id="gen" class="tab active">
-<h2>Register Student Face</h2>
+<div id="gen" class="tab">
+<h2>Generate QR Code</h2>
 <label for="genRoll">Roll:</label> 
 <input id="genRoll" type="text" placeholder="Student Roll Number"><br>
 <label for="genName">Name:</label> 
 <input id="genName" type="text" placeholder="Student Name"><br>
 <label for="genClass">Class:</label> 
 <input id="genClass" type="text" placeholder="e.g., 10A, BTech CS"><br>
-<div style="text-align: center;">
-    <button id="startRegCam" class="button">Start Camera</button>
-    <button id="regFaceBtn" style="display:none;">Capture & Register Face</button>
-</div>
-<video id="faceRegVideo" width="450" height="340" autoplay muted style="display:none;"></video>
-<canvas id="faceRegCanvas" width="450" height="340" style="display:none;"></canvas>
+<button id="genBtn">Generate QR Code</button>
+<canvas id="qrCanvas" width="450" height="450"></canvas><br>
+<a id="downloadBtn" style="display:none" class="button">Download QR</a>
 <div id="genStatus"></div>
 </div>
 
 <div id="scan" class="tab">
-<h2>Scan Face for Attendance</h2>
-<div id="preview-container">
-    <video id="preview" width="300" height="200" autoplay muted style="border:1px solid var(--border-color);"></video>
-    <canvas id="overlay" width="300" height="200"></canvas>
-</div>
+<h2>Scan QR Code</h2>
+<video id="preview" width="300" height="200" style="border:1px solid var(--border-color)"></video><br>
 <div id="scanControls">
-    <button id="startScan">Start Face Scan</button>
+    <button id="startScan">Start Scan</button>
     <button id="stopScan">Stop Scan</button>
 </div>
 <div id="scanResult"></div>
@@ -456,7 +432,7 @@ tr:last-child td {
 
 <div id="students" class="tab">
 <h2>Students List & Management</h2>
-<label for="importCSV">Import Students from CSV (Roll, Name, Class):</label>
+<label for="importCSV">Import Students from CSV:</label>
 <input type="file" id="importCSV" accept=".csv">
 <button id="exportStudents">Export Students CSV</button>
 <button id="backupDB">Backup Database (JSON)</button>
@@ -502,12 +478,14 @@ tr:last-child td {
 </table>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/qrious/dist/qrious.min.js"></script>
+<script src="https://unpkg.com/@zxing/library@latest"></script>
 <script>
-// --- START OF JAVASCRIPT (Facial Recognition / IndexedDB Version) ---
+// --- START OF JAVASCRIPT (IndexedDB Version) ---
 
-// ---------- IndexedDB Setup (Kept the same) ----------
+// ---------- IndexedDB Setup ----------
 const DB_NAME = 'AttendanceDB';
-const DB_VERSION = 2; // Increased DB version to trigger upgrade
+const DB_VERSION = 1;
 const STORE_STUDENTS = 'students';
 const STORE_ATTENDANCE = 'attendance';
 let db;
@@ -521,10 +499,7 @@ function openDB() {
             
             // Students store: keyPath is 'roll' for easy lookup/update
             if (!db.objectStoreNames.contains(STORE_STUDENTS)) {
-                // Students store now needs to handle facial 'descriptors'
                 db.createObjectStore(STORE_STUDENTS, { keyPath: 'roll' });
-            } else if (event.oldVersion < 2) {
-                // Future-proofing: if upgrading from old schema, students must be re-registered for face data
             }
 
             // Attendance store: keyPath is 'id' (autoincrement) for unique records
@@ -597,77 +572,12 @@ async function saveAttendanceRecord(record) { return putData(STORE_ATTENDANCE, r
 function saveWorkingDays(val){ localStorage.setItem('workingDays',val); }
 function loadWorkingDays(){ return parseInt(localStorage.getItem('workingDays')||'0'); }
 
-// Initialize DB and Face Models on load
+// Initialize DB on load
 openDB().catch(e => console.error("Database initialization failed:", e));
 
-// ---------- Face Recognition Setup ----------
-// FIX for GitHub Pages: Referencing models relative to the 'face-api.js' library path
-const MODEL_URL = 'face-api.js/models'; 
-let faceMatcher = null;
-const startScanBtn = document.getElementById('startScan');
-const scanResultDiv = document.getElementById('scanResult');
-const preview = document.getElementById('preview');
-const overlayCanvas = document.getElementById('overlay');
-let recognitionInterval = null;
-let activeStream = null;
-let lastScannedRoll = "";
-const detectionOptions = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 });
-const recognitionThreshold = 0.6; // Lower value is more strict match
-
-// Load all models and pre-process face data for fast lookup
-async function loadFaceModels() {
-    scanResultDiv.textContent = "Loading Face Models...";
-    try {
-        await faceapi.nets.tinyFaceDetector.load(MODEL_URL);
-        await faceapi.nets.faceLandmark68Net.load(MODEL_URL);
-        await faceapi.nets.faceRecognitionNet.load(MODEL_URL);
-        scanResultDiv.textContent = "Models loaded. Processing student data...";
-        await trainFaceData();
-        scanResultDiv.textContent = "Ready to scan.";
-        startScanBtn.disabled = false;
-    } catch(e) {
-        // This is the error handler for model load issues
-        console.error("Failed to load Face-API models. Check if the 'face-api.js/models' folder is correctly set up in your repository.", e);
-        scanResultDiv.textContent = "❌ Error loading models. Check console and folder setup.";
-        startScanBtn.disabled = true;
-    }
-}
-
-// Load students with descriptors and create FaceMatcher
-async function trainFaceData() {
-    const students = await loadStudents();
-    const labeledDescriptors = [];
-
-    students.forEach(student => {
-        if (student.descriptors && student.descriptors.length > 0) {
-            // Convert plain array to Float32Array for face-api
-            const descriptors = student.descriptors.map(arr => new Float32Array(arr));
-            // Label is the roll number (used for identification)
-            const labeledDescriptor = new faceapi.LabeledFaceDescriptors(student.roll, descriptors);
-            labeledDescriptors.push(labeledDescriptor);
-        }
-    });
-
-    if (labeledDescriptors.length > 0) {
-        faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, recognitionThreshold);
-    } else {
-        faceMatcher = null;
-    }
-}
-
-// Initial model load for the scan tab
-document.addEventListener('DOMContentLoaded', () => {
-    // Only load models when the 'scan' button is clicked for the first time
-    document.querySelector('nav button[data-tab="scan"]').addEventListener('click', loadFaceModels, { once: true });
-});
-
-// ---------- Tabs (Kept the same) ----------
+// ---------- Tabs ----------
 document.querySelectorAll('nav button').forEach(btn=>{
     btn.addEventListener('click',async ()=>{
-        // Stop all active camera streams when switching tabs
-        stopRegCam();
-        stopScan();
-
         // Remove active class from all tabs and nav buttons
         document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
         document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active-nav'));
@@ -686,244 +596,131 @@ document.querySelectorAll('nav button').forEach(btn=>{
         }
     });
 });
+document.querySelector('nav button').click(); // default to first tab on load
 
-// ---------- Register Face (Replaces Generate QR) ----------
-const regFaceBtn=document.getElementById('regFaceBtn');
-const regCamBtn=document.getElementById('startRegCam');
-const regVideo=document.getElementById('faceRegVideo');
-const regCanvas=document.getElementById('faceRegCanvas');
+// ---------- Generate QR ----------
+const genBtn=document.getElementById('genBtn');
+const qrCanvas=document.getElementById('qrCanvas');
+const downloadBtn=document.getElementById('downloadBtn');
 const genStatus=document.getElementById('genStatus');
-let regStream=null;
+let qr=null;
 
-regCamBtn.addEventListener('click', async()=>{
+genBtn.addEventListener('click',async ()=>{
     const roll=document.getElementById('genRoll').value.trim();
-    const name=document.getElementById('genName').value.trim();
-    if(!roll || !name){ 
-        alert('Enter Roll Number and Name first.'); 
-        return; 
-    }
+    let name=document.getElementById('genName').value.trim();
+    let cls=document.getElementById('genClass').value.trim();
     
-    try{
-        if(regStream){ stopRegCam(); }
-        
-        // Request camera access
-        regStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user"}});
-        regVideo.srcObject=regStream; 
-        
-        // Show video and buttons on success
-        regVideo.style.display='block';
-        regCanvas.style.display='block';
-        regFaceBtn.style.display='inline-block';
-        regCamBtn.style.display='none';
-        
-        regVideo.onloadedmetadata = (e) => regVideo.play();
-        genStatus.innerHTML=`<small style="color:orange">⚠️ Loading models for registration...</small>`;
-        
-        // Load models for quick registration check
-        await faceapi.nets.tinyFaceDetector.load(MODEL_URL);
-        await faceapi.nets.faceLandmark68Net.load(MODEL_URL);
-        await faceapi.nets.faceRecognitionNet.load(MODEL_URL);
-        
-        genStatus.innerHTML=`<small style="color:green">✔ Camera started. Position face in the center.</small>`;
-    }catch(e){
-        console.error("Camera error:",e); 
-        // Stop stream if it started partially
-        stopRegCam(); 
-        alert("Could not access camera. Ensure you have a camera and have granted permission."); 
-        genStatus.innerHTML="❌ Camera access failed. Check console and permissions.";
-        // Ensure buttons are reset on failure
-        regFaceBtn.style.display='none';
-        regCamBtn.style.display='inline-block';
-    }
-});
+    if(!roll){ alert('Enter Roll Number.'); return; }
+    if(!name) name="Unknown";
+    if(!cls) cls="N/A";
 
-function stopRegCam() {
-    if(regStream){ 
-        regStream.getTracks().forEach(track=>track.stop()); 
-        regStream=null;
-        regVideo.style.display='none';
-        regCanvas.style.display='none';
-        regFaceBtn.style.display='none';
-        regCamBtn.style.display='inline-block';
-    }
-}
+    const existingStudent = await getDataByKey(STORE_STUDENTS, roll);
 
-regFaceBtn.addEventListener('click',async ()=>{
-    const roll=document.getElementById('genRoll').value.trim();
-    const name=document.getElementById('genName').value.trim();
-    const cls=document.getElementById('genClass').value.trim() || "N/A";
-    
-    if(!roll || !name){ alert('Enter Roll Number and Name.'); return; }
-    
+    const newStudentData = {roll, name, class: cls};
+
     try {
-        // 1. Detect face and get descriptor
-        const fullFaceDescriptions = await faceapi.detectSingleFace(regVideo, detectionOptions)
-            .withFaceLandmarks()
-            .withFaceDescriptor();
-
-        if (!fullFaceDescriptions) {
-            genStatus.innerHTML=`<small style="color:red">❌ No face detected. Try again.</small>`;
-            return;
-        }
-
-        // 2. Prepare descriptor for storage (convert Float32Array to standard array)
-        const descriptorArray = Array.from(fullFaceDescriptions.descriptor);
-
-        // 3. Load existing student data
-        const existingStudent = await getDataByKey(STORE_STUDENTS, roll);
-        
-        const newStudentData = {
-            roll, 
-            name, 
-            class: cls,
-            descriptors: existingStudent && existingStudent.descriptors ? existingStudent.descriptors : []
-        };
-        
-        // 4. Update descriptor list
-        let statusMessage = "";
-        
-        if (existingStudent) {
-            // Check if student info changed
-            if (existingStudent.name !== name || existingStudent.class !== cls) {
-                statusMessage = `⚠️ Student info (Name/Class) updated for: ${roll}.`;
+        if(existingStudent){
+            // Check if data is the same, otherwise update student info
+            if(existingStudent.name !== name || existingStudent.class !== cls){
+                await saveStudent(newStudentData);
+                genStatus.innerHTML=<small style="color:orange">⚠ Student info updated for: ${roll}</small>;
             } else {
-                statusMessage = `⚠ Overwriting face data for: ${roll}.`;
+                genStatus.innerHTML=<small style="color:red">❌ QR already generated for: ${roll}</small>;
+                // Still generate/show QR if it exists
             }
         } else {
-            statusMessage = `✔ New student registered: ${roll}.`;
+            await saveStudent(newStudentData);
+            genStatus.innerHTML=<small style="color:green">✔ Student added & QR generated: <code>${roll}</code></small>;
         }
-        
-        // Overwrite or create new descriptor entry
-        newStudentData.descriptors = [descriptorArray]; 
-
-        // 5. Save/Update student in DB
-        await saveStudent(newStudentData);
-
-        // 6. Final Status
-        genStatus.innerHTML=`<small style="color:green">${statusMessage} Face data saved successfully.</small>`;
-        
-        // Cleanup
-        stopRegCam();
-        trainFaceData(); // Retrain the models with new data
-        
     } catch(e) {
-        genStatus.innerHTML=`<small style="color:red">❌ Facial Recognition Error. See console.</small>`;
+        genStatus.innerHTML=<small style="color:red">❌ Database Error: Failed to save/update student.</small>;
         console.error(e);
+        return;
+    }
+
+    // Payload format: ATT|Roll|Name|Class
+    const payload=ATT|${roll}|${name}|${cls};
+    const ctx = qrCanvas.getContext('2d'); ctx.clearRect(0,0,qrCanvas.width,qrCanvas.height);
+
+    qr = new QRious({
+        element: qrCanvas,
+        value: payload,
+        size: 450,
+        level: 'H',
+        background: 'white',
+        foreground: 'black'
+    });
+
+    downloadBtn.href=qrCanvas.toDataURL('image/png');
+    downloadBtn.download=qr_${roll}.png;
+    downloadBtn.style.display='inline-block';
+    if(!existingStudent || existingStudent.name !== name || existingStudent.class !== cls){
+        genStatus.innerHTML=<small style="color:green">✔ QR generated: <code>${roll}</code></small>;
     }
 });
 
-
-// ---------- Scan Face (Replaces Scan QR) ----------
+// ---------- Scanner & Manual Attendance Handler ----------
+let codeReader=null,activeStream=null,lastScanned="";
+const scanResultDiv = document.getElementById('scanResult');
+const preview = document.getElementById('preview');
 
 document.getElementById('startScan').addEventListener('click',async()=>{
-    if (!faceMatcher) {
-        scanResultDiv.textContent = "Models are loading or no students are registered.";
-        // Ensure models are loaded if they weren't
-        await loadFaceModels(); 
-        if (!faceMatcher) {
-             scanResultDiv.textContent = "❌ Cannot start scan: No registered faces or model load failed.";
-             return;
-        }
-    }
-    
+    if(!codeReader) codeReader=new ZXing.BrowserQRCodeReader();
     scanResultDiv.textContent="Starting camera...";
     
     try{
-        stopScan(); // Ensure previous stream is stopped
-        
-        // Request camera with environment facing mode
-        let stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
-        preview.srcObject = stream; 
-        
-        // Update global stream variable
-        activeStream = stream;
-        
+        if(activeStream){ activeStream.getTracks().forEach(track=>track.stop()); }
+        activeStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
+        preview.srcObject=activeStream; 
         preview.setAttribute("playsinline",true);
-        preview.onloadedmetadata = (e) => {
-            preview.play();
-            // Set canvas dimensions to match video
-            overlayCanvas.width = preview.videoWidth;
-            overlayCanvas.height = preview.videoHeight;
-            document.getElementById('preview-container').style.width = preview.videoWidth + 'px';
-            document.getElementById('preview-container').style.height = preview.videoHeight + 'px';
-            scanResultDiv.textContent="Scanning...";
-            recognitionInterval = setInterval(markAttendanceByFace, 1000); // Check for face every 1 second
-        };
-
+        await preview.play();
+        scanResultDiv.textContent="Scanning...";
+        
+        codeReader.decodeFromVideoDevice(null,preview,(result,err)=>{
+            if(result){
+                const payload=result.getText();
+                if(payload!==lastScanned){
+                    lastScanned=payload;
+                    handleScan(payload, scanResultDiv.id);
+                    setTimeout(()=>{lastScanned="";}, 3000); 
+                }
+            }
+        });
     }catch(e){ 
         console.error("Camera error:",e); 
         alert("Could not access camera. Ensure you have a camera and have granted permission."); 
         scanResultDiv.textContent="❌ Camera access failed.";
-        stopScan();
     }
 });
 
-function stopScan(){
+document.getElementById('stopScan').addEventListener('click',()=>{
     if(activeStream){ 
         activeStream.getTracks().forEach(track=>track.stop()); 
         activeStream=null; 
+        codeReader.reset();
     }
-    if(recognitionInterval){
-        clearInterval(recognitionInterval);
-        recognitionInterval = null;
-    }
-    lastScannedRoll = "";
-    // Clear canvas
-    const ctx = overlayCanvas.getContext('2d');
-    ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
-}
-document.getElementById('stopScan').addEventListener('click',stopScan);
+    scanResultDiv.textContent="Scan stopped.";
+});
 
-
-async function markAttendanceByFace(){
-    if (!preview || preview.paused || preview.ended || !faceMatcher) return;
-
-    const detections = await faceapi.detectSingleFace(preview, detectionOptions)
-        .withFaceLandmarks()
-        .withFaceDescriptor();
+// ---------- Handle Scan + Voice (Refactored for IndexedDB) ----------
+async function handleScan(payload, resultDivId){
+    let roll='';
+    const parts=(payload||'').split('|').map(p=>p.trim());
     
-    const ctx = overlayCanvas.getContext('2d');
-    ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
-
-    if (detections) {
-        // Draw the bounding box for the detected face
-        const resizedDetection = faceapi.resizeResults(detections, { width: preview.videoWidth, height: preview.videoHeight });
-        faceapi.draw.drawDetections(overlayCanvas, resizedDetection);
-
-        // Find the best match
-        const bestMatch = faceMatcher.findBestMatch(detections.descriptor);
-        const roll = bestMatch.label;
-        
-        // Draw label (Name/Roll or 'unknown') on the face
-        const drawBox = new faceapi.draw.DrawBox(resizedDetection.box, { label: bestMatch.toString() });
-        drawBox.draw(overlayCanvas);
-
-        if(roll !== 'unknown' && roll !== lastScannedRoll) {
-            lastScannedRoll = roll;
-            handleScan(roll, 'scanResult');
-            // Reset lastScannedRoll after a cool-down period
-            setTimeout(() => { lastScannedRoll = ""; }, 5000); 
-        } else if (roll === 'unknown') {
-            scanResultDiv.innerHTML = `<span style="color:var(--danger-color)">❌ Face detected but no match found.</span>`;
-        }
-    } else {
-        scanResultDiv.innerHTML = "No face detected in view.";
+    // Extract roll from payload (ATT|Roll|Name|Class or just Roll)
+    if(parts.length>=4 && parts[0].toUpperCase()==='ATT'){ 
+        roll=parts[1]; 
+    } else { 
+        roll=parts[0]||''; 
     }
-}
 
-
-// ---------- Manual Attendance Handler (Modified from handleScan to take Roll directly) ----------
-
-// Renamed from handleScan to reflect its purpose now: mark attendance by roll.
-// It is still used by both Manual Attendance and the Facial Recognition loop.
-async function handleScan(roll, resultDivId){
-    roll = roll.trim() || '';
+    roll=roll.trim()||'';
     const resultDiv = document.getElementById(resultDivId);
-    const today = new Date().toISOString().slice(0,10);
+    const today=new Date().toISOString().slice(0,10);
 
     if (!roll) {
-        const msg=`Invalid Roll Data.`;
-        resultDiv.innerHTML=`<span style="color:var(--danger-color)">❌ ${msg}</span>`;
+        const msg=Invalid QR/Roll Data.;
+        resultDiv.innerHTML=<span style="color:var(--danger-color)">❌ ${msg}</span>;
         speak(msg);
         return;
     }
@@ -936,15 +733,15 @@ async function handleScan(roll, resultDivId){
         recs = await loadAttendance();
     } catch (e) {
         console.error("DB Read Error:", e);
-        const msg = `DB Read Error for ${roll}.`;
-        resultDiv.innerHTML=`<span style="color:var(--danger-color)">❌ ${msg}</span>`;
+        const msg = DB Read Error for ${roll}.;
+        resultDiv.innerHTML=<span style="color:var(--danger-color)">❌ ${msg}</span>;
         speak(msg);
         return;
     }
     
     if(!studentExists){
-        const msg=`Invalid Roll Number: ${roll}`;
-        resultDiv.innerHTML=`<span style="color:var(--danger-color)">❌ ${msg}</span>`;
+        const msg=Invalid Roll Number: ${roll};
+        resultDiv.innerHTML=<span style="color:var(--danger-color)">❌ ${msg}</span>;
         speak(msg);
         showStudentHistory(roll, resultDivId === 'scanResult' ? 'scanHistory' : 'manualHistory');
         return;
@@ -954,12 +751,10 @@ async function handleScan(roll, resultDivId){
     const studentClass = studentExists.class || 'N/A';
 
     // Check for existing attendance today
-    const attendanceToday = recs.find(r => r.roll === roll && r.date === today);
-
-    if (attendanceToday){
-        const msg=`Attendance already marked for ${studentName} (Roll: ${roll})`;
-        resultDiv.innerHTML=`<span style="color:var(--danger-color)">❌ ${msg}</span>`;
-        speak('Already marked');
+    if(recs.find(r=>r.roll===roll && r.date===today)){
+        const msg=Attendance already marked for ${studentName} (Roll: ${roll});
+        resultDiv.innerHTML=<span style="color:var(--danger-color)">❌ ${msg}</span>;
+        speak(msg);
         showStudentHistory(roll, resultDivId === 'scanResult' ? 'scanHistory' : 'manualHistory');
         return;
     }
@@ -968,38 +763,39 @@ async function handleScan(roll, resultDivId){
     const newRecord = {roll:roll, name:studentName, class:studentClass, ts:Date.now(), date:today};
     try {
         await saveAttendanceRecord(newRecord);
-        const msg=`Attendance marked for ${studentName} (Roll: ${roll})`;
-        resultDiv.innerHTML=`<span style="color:var(--secondary-color)">✅ ${msg} — Class: ${studentClass}</span>`;
-        speak(`Welcome ${studentName}`);
+        const msg=Attendance marked for ${studentName} (Roll: ${roll});
+        resultDiv.innerHTML=<span style="color:var(--secondary-color)">✅ ${msg} — Class: ${studentClass}</span>;
+        speak(msg);
         showStudentHistory(roll, resultDivId === 'scanResult' ? 'scanHistory' : 'manualHistory');
     } catch(e) {
         console.error("DB Write Error:", e);
-        const msg = `Failed to mark attendance for ${studentName}.`;
-        resultDiv.innerHTML=`<span style="color:var(--danger-color)">❌ ${msg}</span>`;
-        speak('Database write failed');
+        const msg = Failed to mark attendance for ${studentName}.;
+        resultDiv.innerHTML=<span style="color:var(--danger-color)">❌ ${msg}</span>;
+        speak(msg);
     }
 }
 
-// ---------- Manual Attendance (Kept the same, calls handleScan) ----------
+// ---------- Manual Attendance ----------
 document.getElementById('markManual').addEventListener('click',()=>{
     const roll=document.getElementById('manualRoll').value.trim();
+    // Roll is used directly as the payload in handleScan
     handleScan(roll, 'manualResult'); 
     document.getElementById('manualRoll').value='';
 });
 
-// ---------- Voice (Kept the same) ----------
+// ---------- Voice ----------
 function speak(text){
     try{
         if('speechSynthesis' in window){
             window.speechSynthesis.cancel();
             const utter = new SpeechSynthesisUtterance(text);
-            utter.lang="en-US"; // Changed to US for wider support/better quality
+            utter.lang="en-IN";
             window.speechSynthesis.speak(utter);
         }
     }catch(e){ console.error('Speech error',e); }
 }
 
-// ---------- Show History (Kept the same) ----------
+// ---------- Show History (Refactored for IndexedDB) ----------
 async function showStudentHistory(roll,ulId){
     const allRecs = await loadAttendance();
     const recs=allRecs.filter(r=>r.roll===roll).sort((a,b) => b.ts - a.ts).slice(0, 10); // Sort by timestamp (newest first)
@@ -1013,20 +809,19 @@ async function showStudentHistory(roll,ulId){
     recs.forEach(r=>{
         const classText=r.class||'N/A';
         const li=document.createElement('li');
-        li.textContent=`${r.date} — ${r.roll} — ${r.name} — Class: ${classText}`;
+        li.textContent=${r.date} — ${r.roll} — ${r.name} — Class: ${classText};
         ul.appendChild(li);
     });
 }
 
-// ---------- Students & Attendance Rendering (Kept the same) ----------
+// ---------- Students & Attendance Rendering (Refactored for IndexedDB) ----------
 async function renderStudents(){
     const ul=document.getElementById('stuList'); ul.innerHTML='';
     const students = await loadStudents();
     students.sort((a,b) => a.roll.localeCompare(b.roll));
     students.forEach(s=>{
-        const faceStatus = s.descriptors && s.descriptors.length > 0 ? ' (Face Registered)' : ' (NO FACE DATA)';
         const li=document.createElement('li');
-        li.textContent=`Roll: ${s.roll} — Name: ${s.name} — Class: ${s.class||'N/A'}${faceStatus}`; 
+        li.textContent=Roll: ${s.roll} — Name: ${s.name} — Class: ${s.class||'N/A'}; 
         ul.appendChild(li);
     });
 }
@@ -1040,12 +835,12 @@ async function renderAttendance(){
         const classText=r.class||'N/A';
         const ts = new Date(r.ts).toLocaleTimeString();
         const li=document.createElement('li');
-        li.textContent=`${r.date} ${ts} — Roll: ${r.roll} — Name: ${r.name} — Class: ${classText}`;
+        li.textContent=${r.date} ${ts} — Roll: ${r.roll} — Name: ${r.name} — Class: ${classText};
         ul.appendChild(li);
     });
 }
 
-// ---------- CSV Utility (Kept the same) ----------
+// ---------- CSV Utility (Remains the same) ----------
 function downloadCSV(data,filename){ 
     const blob=new Blob([data],{type:'text/csv;charset=utf-8;'}); 
     const url=URL.createObjectURL(blob); 
@@ -1060,35 +855,33 @@ function escapeCsv(val){
     if(val==null) return ''; 
     let str = String(val);
     if(str.includes(',') || str.includes('"') || str.includes('\n')) {
-        return `"${str.replace(/"/g,'""')}"`; 
+        return "${str.replace(/"/g,'""')}"; 
     }
     return str; 
 }
 
-// ---------- CSV Exports (Kept the same) ----------
+// ---------- CSV Exports (Refactored for IndexedDB) ----------
 document.getElementById('exportStudents').addEventListener('click',async ()=>{
     const stu=await loadStudents(); 
-    // Do NOT export the face descriptors!
     let csv="roll,name,class\n";
-    stu.forEach(s=>{csv+=`${escapeCsv(s.roll)},${escapeCsv(s.name)},${escapeCsv(s.class)}\n`;}); 
+    stu.forEach(s=>{csv+=${escapeCsv(s.roll)},${escapeCsv(s.name)},${escapeCsv(s.class)}\n;}); 
     downloadCSV(csv,"students.csv");
 });
 
 document.getElementById('exportRawAttendance').addEventListener('click',async ()=>{
     const recs=await loadAttendance(); 
     let csv="roll,name,class,timestamp,date\n";
-    recs.forEach(r=>{csv+=`${escapeCsv(r.roll)},${escapeCsv(r.name)},${escapeCsv(r.class||'N/A')},${r.ts},${r.date}\n`;}); 
+    recs.forEach(r=>{csv+=${escapeCsv(r.roll)},${escapeCsv(r.name)},${escapeCsv(r.class||'N/A')},${r.ts},${r.date}\n;}); 
     downloadCSV(csv,"attendance_raw.csv");
 });
 
-// ---------- Database Backup (Modified for descriptors) ----------
+// ---------- Database Backup (New Functionality) ----------
 document.getElementById('backupDB').addEventListener('click',async ()=>{
     try {
         const students = await loadStudents();
         const attendance = await loadAttendance();
         const workingDays = loadWorkingDays();
         
-        // Descriptors will be included in the backup
         const backupData = {
             timestamp: Date.now(),
             students: students,
@@ -1103,19 +896,19 @@ document.getElementById('backupDB').addEventListener('click',async ()=>{
         const a = document.createElement('a');
         const dateStr = new Date().toISOString().slice(0, 10);
         a.href = url;
-        a.download = `attendance_db_backup_${dateStr}_FR.json`;
+        a.download = attendance_db_backup_${dateStr}.json;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        alert('Database backup successful! Face descriptors are included.');
+        alert('Database backup successful!');
     } catch (e) {
         console.error("Backup failed:", e);
         alert('Database backup failed. Check console for details.');
     }
 });
 
-// ---------- CSV Import (Kept the same logic but needs roll, name, class) ----------
+// ---------- CSV Import (Refactored for IndexedDB) ----------
 document.getElementById('importCSV').addEventListener('change',e=>{
     const file=e.target.files[0]; 
     if(!file) return;
@@ -1126,10 +919,10 @@ document.getElementById('importCSV').addEventListener('change',e=>{
 
 async function importCSV(text){
     const lines=(text||'').trim().split(/\r?\n/);
-    const students = await loadStudents(); 
+    const students = await loadStudents(); // Get current list for duplicate check
     let importedCount = 0;
     
-    // Simple CSV parser that handles quoted fields (basic) - KEPT SAME
+    // Simple CSV parser that handles quoted fields (basic)
     function parseCsvLine(line) {
         const result = [];
         let inQuotes = false;
@@ -1138,7 +931,7 @@ async function importCSV(text){
             const char = line[i];
             if (char === '"' && line[i + 1] === '"' && inQuotes) {
                 field += '"';
-                i++; 
+                i++; // Skip the next quote
             } else if (char === '"') {
                 inQuotes = !inQuotes;
             } else if (char === ',' && !inQuotes) {
@@ -1148,8 +941,8 @@ async function importCSV(text){
                 field += char;
             }
         }
-        result.push(field); 
-        return result.map(s => s.trim().replace(/^"|"$/g, '')); 
+        result.push(field); // Push the last field
+        return result.map(s => s.trim().replace(/^"|"$/g, '')); // Trim and remove outer quotes
     }
 
     for(let i=0;i<lines.length;i++){
@@ -1159,29 +952,30 @@ async function importCSV(text){
         
         if(cols.length<2) continue;
         
+        // Skip header row if it looks like one
         if(i===0 && /^roll$/i.test(cols[0])) continue; 
         
         const roll=(cols[0]||'').trim();
         const name=(cols[1]||'').trim();
         const cls=(cols[2]||'N/A').trim();
         
+        // Only import if roll and name are present AND roll doesn't exist already
         if(roll && name && !students.find(s=>s.roll===roll)){
             try {
-                // IMPORTANT: New students imported from CSV will NOT have face data.
-                await saveStudent({roll,name,class:cls, descriptors:[]});
+                await saveStudent({roll,name,class:cls});
                 importedCount++;
             } catch (e) {
-                console.error(`Failed to import student ${roll}:`, e);
+                console.error(Failed to import student ${roll}:, e);
             }
         }
     }
     
     renderStudents();
-    alert(`Successfully imported ${importedCount} new students. (Note: Imported students require face registration)`);
-    document.getElementById('importCSV').value = ''; 
+    alert(Successfully imported ${importedCount} new students.);
+    document.getElementById('importCSV').value = ''; // Clear file input
 }
 
-// ---------- Reports (Kept the same) ----------
+// ---------- Reports (Refactored for IndexedDB) ----------
 async function calculateReport(){
     const recs=await loadAttendance();
     const students = await loadStudents();
@@ -1196,10 +990,11 @@ async function calculateReport(){
 
 
     recs.forEach(r=>{
+        // Use the student list as the primary source of name/class info
         const studentInfo = studentsMap[r.roll] || {name: r.name, class: r.class || 'N/A'}; 
         const d=new Date(r.date);
-        const monthKey=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-        const stuKey=`${r.roll}|${monthKey}`;
+        const monthKey=${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')};
+        const stuKey=${r.roll}|${monthKey};
         
         if(!studentReport[stuKey]) studentReport[stuKey]={roll:r.roll,name:studentInfo.name,class:studentInfo.class,month:monthKey,days:new Set()};
         studentReport[stuKey].days.add(r.date);
@@ -1211,6 +1006,7 @@ async function calculateReport(){
         const parts=item.month.split('-').map(Number);
         
         let totalDays = workingDaysInput;
+        // If working days is 0 or not set, calculate total days in month
         if(workingDaysInput === 0) {
             totalDays = new Date(parts[0], parts[1], 0).getDate();
         }
@@ -1221,9 +1017,10 @@ async function calculateReport(){
     }
 
     studentRows.forEach(r=>{
-        const key=`${r.class}|${r.month}`;
+        const key=${r.class}|${r.month};
         if(!classReport[key]) classReport[key]={class:r.class,month:r.month,totalStudents:0,totalDays:r.totalDays,totalAttendance:0, uniqueStudents: new Set()};
         
+        // Count unique students per month/class
         if (!classReport[key].uniqueStudents.has(r.roll)) {
             classReport[key].totalStudents+=1;
             classReport[key].uniqueStudents.add(r.roll);
@@ -1253,7 +1050,7 @@ document.getElementById('genReport').addEventListener('click',async ()=>{
         } else {
             studentRows.forEach(r=>{
                 const tr=document.createElement('tr');
-                tr.innerHTML=`<td>${r.roll}</td><td>${r.name}</td><td>${r.class}</td><td>${r.month}</td><td>${r.attended}</td><td>${r.totalDays}</td><td>${r.perc}%</td>`;
+                tr.innerHTML=<td>${r.roll}</td><td>${r.name}</td><td>${r.class}</td><td>${r.month}</td><td>${r.attended}</td><td>${r.totalDays}</td><td>${r.perc}%</td>;
                 tbody.appendChild(tr);
             });
         }
@@ -1265,7 +1062,7 @@ document.getElementById('genReport').addEventListener('click',async ()=>{
         } else {
             classRows.forEach(c=>{
                 const tr=document.createElement('tr');
-                tr.innerHTML=`<td>${c.class}</td><td>${c.month}</td><td>${c.totalStudents}</td><td>${c.totalDays}</td><td>${c.totalAttendance}</td><td>${c.perc}%\t</td>`;
+                tr.innerHTML=<td>${c.class}</td><td>${c.month}</td><td>${c.totalStudents}</td><td>${c.totalDays}</td><td>${c.totalAttendance}</td><td>${c.perc}%\t</td>;
                 tbody2.appendChild(tr);
             });
         }
@@ -1278,14 +1075,14 @@ document.getElementById('genReport').addEventListener('click',async ()=>{
 document.getElementById('exportStudentReport').addEventListener('click',async ()=>{
     const {studentRows}=await calculateReport(); 
     let csv="roll,name,class,month,attended,totalDays,percentage\n";
-    studentRows.forEach(r=>{csv+=`${escapeCsv(r.roll)},${escapeCsv(r.name)},${escapeCsv(r.class)},${r.month},${r.attended},${r.totalDays},${r.perc}%\n`;});
+    studentRows.forEach(r=>{csv+=${escapeCsv(r.roll)},${escapeCsv(r.name)},${escapeCsv(r.class)},${r.month},${r.attended},${r.totalDays},${r.perc}%\n;});
     downloadCSV(csv,"student_report.csv");
 });
 
 document.getElementById('exportClassReport').addEventListener('click',async ()=>{
     const {classRows}=await calculateReport(); 
     let csv="class,month,totalStudents,totalDays,totalAttendance,percentage\n";
-    classRows.forEach(c=>{csv+=`${escapeCsv(c.class)},${c.month},${c.totalStudents},${c.totalDays},${c.totalAttendance},${c.perc}%\n`;});
+    classRows.forEach(c=>{csv+=${escapeCsv(c.class)},${c.month},${c.totalStudents},${c.totalDays},${c.totalAttendance},${c.perc}%\n;});
     downloadCSV(csv,"class_report.csv");
 });
 
@@ -1293,4 +1090,3 @@ document.getElementById('exportClassReport').addEventListener('click',async ()=>
 </script>
 </body>
 </html>
-This video demonstrates a general method for [Downloading files from GitHub](https://www.youtube.com/watch?v=wzYx1y-lFp8), which is necessary for getting the required Face-API library and model files into your repository.
