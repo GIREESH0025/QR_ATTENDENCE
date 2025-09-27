@@ -626,6 +626,7 @@ async function loadFaceModels() {
         scanResultDiv.textContent = "Ready to scan.";
         startScanBtn.disabled = false;
     } catch(e) {
+        // This is the error handler for model load issues
         console.error("Failed to load Face-API models. Check if the 'face-api.js/models' folder is correctly set up in your repository.", e);
         scanResultDiv.textContent = "❌ Error loading models. Check console and folder setup.";
         startScanBtn.disabled = true;
@@ -1292,3 +1293,4 @@ document.getElementById('exportClassReport').addEventListener('click',async ()=>
 </script>
 </body>
 </html>
+This video demonstrates a general method for [Downloading files from GitHub](https://www.youtube.com/watch?v=wzYx1y-lFp8), which is necessary for getting the required Face-API library and model files into your repository.
